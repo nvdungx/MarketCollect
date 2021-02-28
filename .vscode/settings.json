@@ -1,0 +1,12 @@
+{
+  "editor.tabSize": 2,
+  "cSpell.words": [
+    "astimezone",
+    "csms",
+    "ocpp",
+    "pagetxt",
+    "tlstep"
+  ],
+  "python.pythonPath": ".venv\\Scripts\\python.exe",
+  "files.trimTrailingWhitespace": false
+}
