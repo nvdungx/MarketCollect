@@ -20,21 +20,23 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QComboBox" name="comboBox">
-     <property name="currentText">
-      <string>New Item</string>
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
      </property>
-     <property name="placeholderText">
+     <property name="currentText">
       <string/>
      </property>
-     <item>
-      <property name="text">
-       <string>New Item</string>
-      </property>
-     </item>
     </widget>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>

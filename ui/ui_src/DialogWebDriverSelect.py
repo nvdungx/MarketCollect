@@ -27,13 +27,16 @@ class Ui_DialogWebDriver(object):
         self.verticalLayout = QVBoxLayout(DialogWebDriver)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.comboBox = QComboBox(DialogWebDriver)
-        self.comboBox.addItem("")
         self.comboBox.setObjectName(u"comboBox")
+        font = QFont()
+        font.setPointSize(12)
+        self.comboBox.setFont(font)
 
         self.verticalLayout.addWidget(self.comboBox)
 
         self.buttonBox = QDialogButtonBox(DialogWebDriver)
         self.buttonBox.setObjectName(u"buttonBox")
+        self.buttonBox.setFont(font)
         self.buttonBox.setOrientation(Qt.Horizontal)
         self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
         self.buttonBox.setCenterButtons(True)
@@ -50,10 +53,7 @@ class Ui_DialogWebDriver(object):
 
     def retranslateUi(self, DialogWebDriver):
         DialogWebDriver.setWindowTitle(QCoreApplication.translate("DialogWebDriver", u"Select Web Driver", None))
-        self.comboBox.setItemText(0, QCoreApplication.translate("DialogWebDriver", u"New Item", None))
-
-        self.comboBox.setCurrentText(QCoreApplication.translate("DialogWebDriver", u"New Item", None))
-        self.comboBox.setPlaceholderText("")
+        self.comboBox.setCurrentText("")
     # retranslateUi
 
 

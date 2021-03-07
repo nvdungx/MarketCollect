@@ -18,17 +18,38 @@ class Ui_DialogFormula(object):
     def setupUi(self, DialogFormula):
         if not DialogFormula.objectName():
             DialogFormula.setObjectName(u"DialogFormula")
-        DialogFormula.resize(320, 240)
+        DialogFormula.resize(320, 101)
         application_path = os.path.dirname(__file__)
         uidir = os.path.abspath(os.path.join(application_path, "../."))
         icon = QIcon()
         icon.addFile(os.path.join(uidir, u"icons/icon-formula.png"), QSize(), QIcon.Normal, QIcon.Off)
         DialogFormula.setWindowIcon(icon)
+        self.gridLayout = QGridLayout(DialogFormula)
+        self.gridLayout.setObjectName(u"gridLayout")
+        self.lineEdit = QLineEdit(DialogFormula)
+        self.lineEdit.setObjectName(u"lineEdit")
+        font = QFont()
+        font.setPointSize(12)
+        self.lineEdit.setFont(font)
+
+        self.gridLayout.addWidget(self.lineEdit, 0, 1, 1, 1)
+
+        self.label = QLabel(DialogFormula)
+        self.label.setObjectName(u"label")
+        self.label.setFont(font)
+        self.label.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
+
         self.buttonBox = QDialogButtonBox(DialogFormula)
         self.buttonBox.setObjectName(u"buttonBox")
-        self.buttonBox.setGeometry(QRect(10, 200, 301, 32))
+        self.buttonBox.setFont(font)
         self.buttonBox.setOrientation(Qt.Horizontal)
         self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+        self.buttonBox.setCenterButtons(True)
+
+        self.gridLayout.addWidget(self.buttonBox, 2, 0, 1, 2)
+
 
         self.retranslateUi(DialogFormula)
         self.buttonBox.accepted.connect(DialogFormula.accept)
@@ -39,6 +60,7 @@ class Ui_DialogFormula(object):
 
     def retranslateUi(self, DialogFormula):
         DialogFormula.setWindowTitle(QCoreApplication.translate("DialogFormula", u"Formula Setting", None))
+        self.label.setText(QCoreApplication.translate("DialogFormula", u"Input:", None))
     # retranslateUi
 
 

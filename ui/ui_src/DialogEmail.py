@@ -24,11 +24,25 @@ class Ui_DialogEmail(object):
         icon = QIcon()
         icon.addFile(os.path.join(uidir, u"icons/icon-email-notification.png"), QSize(), QIcon.Normal, QIcon.Off)
         DialogEmail.setWindowIcon(icon)
+        self.verticalLayout = QVBoxLayout(DialogEmail)
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.tableView = QTableView(DialogEmail)
+        self.tableView.setObjectName(u"tableView")
+
+        self.verticalLayout.addWidget(self.tableView)
+
         self.buttonBox = QDialogButtonBox(DialogEmail)
         self.buttonBox.setObjectName(u"buttonBox")
-        self.buttonBox.setGeometry(QRect(10, 200, 301, 32))
+        font = QFont()
+        font.setPointSize(12)
+        self.buttonBox.setFont(font)
+        self.buttonBox.setLayoutDirection(Qt.LeftToRight)
         self.buttonBox.setOrientation(Qt.Horizontal)
         self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+        self.buttonBox.setCenterButtons(True)
+
+        self.verticalLayout.addWidget(self.buttonBox)
+
 
         self.retranslateUi(DialogEmail)
         self.buttonBox.accepted.connect(DialogEmail.accept)

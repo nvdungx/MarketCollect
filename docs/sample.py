@@ -104,8 +104,10 @@ def get_price_amazon(prod_list):
   options = webdriver.ChromeOptions()
   options.add_argument("--ignore-certificate-errors")
   options.add_argument("--incognito")
-  # options.add_argument("--headless")
-  driver = webdriver.Chrome("./browserdriver/ChromeDriver88.0.4324.96_32b.exe", chrome_options=options)
+  # options.add_argument("--/prefetch:5")
+  options.add_argument("--headless")
+  options.add_argument("--disable-notifications")
+  driver = webdriver.Chrome("../browserdriver/ChromeDriver88.0.4324.96_32b.exe", chrome_options=options)
   driver.get("https://amazon.com")
   # find zipcode element
   if(not click_element(driver, '//*[@id="nav-global-location-popover-link"]')):
@@ -124,7 +126,7 @@ def get_price_amazon(prod_list):
 
   for item_idx, item in enumerate(prod_list):
     driver.get(item.link)
-    time.sleep(1)
+    time.sleep(0.1)
     # TITLE
     # //*/div[@id="centerCol"]/*/[@id="productTitle"]
     result, ele = get_element(driver, '//*/span[@id="productTitle"]')
