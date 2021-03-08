@@ -50,6 +50,7 @@ class AmazonApi:
   #     return False
   def get_price(self, prd_list:list):
     self.driver = webdriver.Chrome(os.path.abspath(os.path.join(self.cur_dir, "../browserdriver/ChromeDriver88.0.4324.96_32b.exe")), chrome_options=self.options)
+    time.sleep(2)
     self.driver.get("https://amazon.com")
     time.sleep(2)
     # find zipcode element
@@ -59,7 +60,7 @@ class AmazonApi:
     if(not self.__act_send_data('//*[@id="GLUXZipUpdateInput"]', "97124")):
       raise Exception("WEB_DRIVER", "Failed to find amazon html element {0}".format("zip-code-textbox"))
     # GLUXZipUpdate - update code button 
-    if(not self.__act_click_element('//*[@id="GLUXZipUpdate"]/span')):
+    if(not self.__act_click_element('//*[@id="GLUXZipUpdate"]')):
       raise Exception("WEB_DRIVER", "Failed to find amazon html element {0}".format("zip-code-update-button"))
     # continue - GLUXConfirmAction - /html/body/div[5]/div/div/div[2]/span/span
     if (False == self.__act_click_element('//*/div[@class="a-popover-wrapper"]/div[@class="a-popover-footer"]/span/span')):
@@ -71,12 +72,13 @@ class AmazonApi:
       self.driver.get(item.link)
       # wait(self.driver, 20, 0.1).until(self.__valid_page(LIST_TAG))
       # self.driver.execute_script("window.stop();")
-      time.sleep(0.5)
+      time.sleep(0.2)
       # TITLE
       # //*/div[@id="centerCol"]/*/[@id="productTitle"]
       result, ele = self.__act_get_element('//*/span[@id="productTitle"]')
       if(not result):
-        raise Exception("WEB_DRIVER", "Failed to find amazon html element {0}".format("product-title"))
+        self.console("WEB_DRIVER: Failed to find amazon html element {0}".format("product-title"))
+        continue
       else:
         item.name = ele.text.strip()
       # PRICE
@@ -104,7 +106,8 @@ class AmazonApi:
           else:
             self.console("Cannot find product currency")
         else:
-          raise Exception("PROCESS", "Failed to get price from string {0}".format(temp))
+          self.console("PROCESS: Failed to get price from string {0}".format(temp))
+          continue
 
       # ITEM OUT OF STOCK or AMAZON PLACE "Available from these sellers." span script
       if (not result):
@@ -132,7 +135,8 @@ class AmazonApi:
       if (not result):
         result, ele = self.__act_get_element('//*[@id="olp_feature_div"]/div/span/a[@class="a-link-normal"]/span[@class="a-size-base a-color-price"]')
         if (not result):
-          raise Exception("WEB_DRIVER", "Failed to find product price, please update the target element xpath")
+          elf.console("WEB_DRIVER: Failed to find product price, please update the target element xpath")
+          continue
         else:
           item.multi_vendor = True
           item.status = ItemStatus.IN_STOCK
@@ -147,7 +151,8 @@ class AmazonApi:
             else:
               self.console("Cannot find product currency")
           else:
-            raise Exception("PROCESS", "Failed to get price from string {0}".format(temp))
+            self.console("PROCESS: Failed to get price from string {0}".format(temp))
+            continue
       if (result):
         self.console("[AMAZON]: COLLECT ITEM {0} DONE - {1}{2}".format(item_idx, item.price, item.currency))
     self.driver.quit()
@@ -155,19 +160,19 @@ class AmazonApi:
 
   def __act_click_element(self,xpath):
     try:
-      wait(self.driver, 10).until(EC.element_to_be_clickable((By.XPATH,xpath))).click()
+      wait(self.driver, 5).until(EC.element_to_be_clickable((By.XPATH,xpath))).click()
       return True
     except:
       return False
   def __act_send_data(self,xpath, data):
     try:
-      wait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH,xpath))).send_keys(data)
+      wait(self.driver, 5).until(EC.presence_of_element_located((By.XPATH,xpath))).send_keys(data)
       return True
     except:
       return False
   def __act_get_element(self,xpath):
     try:
-      wait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH,xpath)))
+      wait(self.driver, 5).until(EC.presence_of_element_located((By.XPATH,xpath)))
       ele = self.driver.find_element_by_xpath(xpath)
       return True, ele
     except:

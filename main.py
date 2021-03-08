@@ -40,6 +40,8 @@ from src.module_amazon import *
 from src.module_ebay import *
 from src.module_report import *
 
+import pydevd
+
 class MainWindow(QMainWindow):
   def __init__(self):
     self.tool_dir = os.path.dirname(__file__)
@@ -152,6 +154,7 @@ class BackgroundThread(QThread):
     self.signals.console.emit(f"{val}")
 
   def run(self):
+    pydevd.settrace(suspend=False)
     self.parent.amazon.console = self.console_log
     self.parent.ebay.console = self.console_log
     self.parent.report.get_prd_link(os.path.abspath(os.path.join(self.parent.tool_dir, "./data/Check-Price-AMZ-EBAY.xlsx")))
