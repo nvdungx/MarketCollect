@@ -18,16 +18,16 @@ class Ui_DialogTimer(object):
     def setupUi(self, DialogTimer):
         if not DialogTimer.objectName():
             DialogTimer.setObjectName(u"DialogTimer")
-        DialogTimer.resize(240, 320)
+        DialogTimer.resize(375, 320)
         application_path = os.path.dirname(__file__)
-        uidir = os.path.abspath(os.path.join(application_path, "../."))
+        self.uidir = os.path.abspath(os.path.join(application_path, "../."))
         sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(DialogTimer.sizePolicy().hasHeightForWidth())
         DialogTimer.setSizePolicy(sizePolicy)
         icon = QIcon()
-        icon.addFile(os.path.join(uidir, u"icons/icon-config-timer.png"), QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(os.path.join(self.uidir, u"icons/icon-config-timer.png"), QSize(), QIcon.Normal, QIcon.Off)
         DialogTimer.setWindowIcon(icon)
         self.gridLayout = QGridLayout(DialogTimer)
         self.gridLayout.setObjectName(u"gridLayout")
@@ -62,17 +62,17 @@ class Ui_DialogTimer(object):
         self.frame.setFrameShadow(QFrame.Raised)
         self.verticalLayout = QVBoxLayout(self.frame)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.pushButton = QPushButton(self.frame)
-        self.pushButton.setObjectName(u"pushButton")
-        self.pushButton.setFont(font1)
+        self.btnAdd = QPushButton(self.frame)
+        self.btnAdd.setObjectName(u"btnAdd")
+        self.btnAdd.setFont(font1)
 
-        self.verticalLayout.addWidget(self.pushButton)
+        self.verticalLayout.addWidget(self.btnAdd)
 
-        self.pushButton_2 = QPushButton(self.frame)
-        self.pushButton_2.setObjectName(u"pushButton_2")
-        self.pushButton_2.setFont(font1)
+        self.btnRemove = QPushButton(self.frame)
+        self.btnRemove.setObjectName(u"btnRemove")
+        self.btnRemove.setFont(font1)
 
-        self.verticalLayout.addWidget(self.pushButton_2)
+        self.verticalLayout.addWidget(self.btnRemove)
 
         self.frame_2 = QFrame(self.frame)
         self.frame_2.setObjectName(u"frame_2")
@@ -84,16 +84,16 @@ class Ui_DialogTimer(object):
 
         self.gridLayout.addWidget(self.frame, 4, 2, 1, 1)
 
-        self.listWidget = QListWidget(DialogTimer)
-        self.listWidget.setObjectName(u"listWidget")
+        self.listWidgetTimer = QListWidget(DialogTimer)
+        self.listWidgetTimer.setObjectName(u"listWidgetTimer")
         sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.listWidget.sizePolicy().hasHeightForWidth())
-        self.listWidget.setSizePolicy(sizePolicy2)
-        self.listWidget.setFont(font1)
+        sizePolicy2.setHeightForWidth(self.listWidgetTimer.sizePolicy().hasHeightForWidth())
+        self.listWidgetTimer.setSizePolicy(sizePolicy2)
+        self.listWidgetTimer.setFont(font1)
 
-        self.gridLayout.addWidget(self.listWidget, 4, 1, 1, 1)
+        self.gridLayout.addWidget(self.listWidgetTimer, 4, 1, 1, 1)
 
 
         self.retranslateUi(DialogTimer)
@@ -106,8 +106,8 @@ class Ui_DialogTimer(object):
     def retranslateUi(self, DialogTimer):
         DialogTimer.setWindowTitle(QCoreApplication.translate("DialogTimer", u"Timer Setting", None))
         self.label.setText(QCoreApplication.translate("DialogTimer", u"Timer List", None))
-        self.pushButton.setText(QCoreApplication.translate("DialogTimer", u"Add", None))
-        self.pushButton_2.setText(QCoreApplication.translate("DialogTimer", u"Remove", None))
+        self.btnAdd.setText(QCoreApplication.translate("DialogTimer", u"Add", None))
+        self.btnRemove.setText(QCoreApplication.translate("DialogTimer", u"Remove", None))
     # retranslateUi
 
 

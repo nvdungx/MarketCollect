@@ -20,10 +20,10 @@ foreach ($item in $file_list)
     elseif ($reg1.Match($_.ToString()).Success) {
       [void]$line.Add($_.ToString())
       [void]$line.Add('        application_path = os.path.dirname(__file__)')
-      [void]$line.Add('        uidir = os.path.abspath(os.path.join(application_path, "../."))')
+      [void]$line.Add('        self.uidir = os.path.abspath(os.path.join(application_path, "../."))')
     }
     elseif ($reg2.Match($_.ToString()).Success) {
-      $temp = $_.ToString().Replace($reg2.Match($_.ToString()).Groups[1].ToString(), ("os.path.join(uidir, {0})" -f $reg2.Match($_.ToString()).Groups[1].ToString()))
+      $temp = $_.ToString().Replace($reg2.Match($_.ToString()).Groups[1].ToString(), ("os.path.join(self.uidir, {0})" -f $reg2.Match($_.ToString()).Groups[1].ToString()))
       [void]$line.Add($temp)
     }
     else{

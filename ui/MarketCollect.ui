@@ -314,6 +314,12 @@
    <property name="text">
     <string>Update</string>
    </property>
+   <property name="toolTip">
+    <string>Update Tool version</string>
+   </property>
+   <property name="statusTip">
+    <string>Update Tool version</string>
+   </property>
    <property name="font">
     <font>
      <pointsize>12</pointsize>
@@ -328,6 +334,12 @@
    <property name="text">
     <string>License</string>
    </property>
+   <property name="toolTip">
+    <string>License check</string>
+   </property>
+   <property name="statusTip">
+    <string>License check</string>
+   </property>
    <property name="font">
     <font>
      <pointsize>12</pointsize>
@@ -340,6 +352,9 @@
      <normaloff>icons/icon-about.jpg</normaloff>icons/icon-about.jpg</iconset>
    </property>
    <property name="text">
+    <string>About</string>
+   </property>
+   <property name="statusTip">
     <string>About</string>
    </property>
    <property name="font">
@@ -357,6 +372,9 @@
     <string>Repeat Timer</string>
    </property>
    <property name="toolTip">
+    <string>Config timer for repeat operation</string>
+   </property>
+   <property name="statusTip">
     <string>Config timer for repeat operation</string>
    </property>
    <property name="font">
@@ -379,6 +397,9 @@
    <property name="toolTip">
     <string>Setup email list and notification condition</string>
    </property>
+   <property name="statusTip">
+    <string>Setup email list and notification condition</string>
+   </property>
    <property name="font">
     <font>
      <pointsize>12</pointsize>
@@ -399,6 +420,9 @@
    <property name="toolTip">
     <string>Set Profit Formula for Output File</string>
    </property>
+   <property name="statusTip">
+    <string>Set Profit Formula for Output File</string>
+   </property>
    <property name="font">
     <font>
      <pointsize>12</pointsize>
@@ -414,6 +438,9 @@
      <normaloff>icons/icon-webdriver.png</normaloff>icons/icon-webdriver.png</iconset>
    </property>
    <property name="text">
+    <string>Select Web Driver</string>
+   </property>
+   <property name="statusTip">
     <string>Select Web Driver</string>
    </property>
    <property name="font">
@@ -434,6 +461,9 @@
     <string>Config Tool Resource</string>
    </property>
    <property name="toolTip">
+    <string>Config Tool Resource (i.e. number of thread/core used by tool)</string>
+   </property>
+   <property name="statusTip">
     <string>Config Tool Resource (i.e. number of thread/core used by tool)</string>
    </property>
    <property name="font">

@@ -1,7 +1,7 @@
 from PySide6.QtCore import *
 from PySide6.QtGui import *
 from PySide6.QtWidgets import *
-import os
+import os, sys, shutil
 import PySide6.QtCore
 # import ui_src
 from ui.ui_src.DialogWebDriverSelect import *
@@ -54,8 +54,13 @@ class DialogWebDriver(QDialog):
     super().__init__()
     self.ui = Ui_DialogWebDriver()
     self.ui.setupUi(self)
-# self.comboBox.addItem("")
-# self.comboBox.setItemText(0, QCoreApplication.translate("DialogWebDriver", u"New Item", None))
-
-# self.comboBox.setCurrentText(QCoreApplication.translate("DialogWebDriver", u"New Item", None))
-# self.comboBox.setPlaceholderText("")
+    driver_dir = os.path.abspath(os.path.join(self.ui.uidir, "../browserdriver"))
+    self.driver_dict = {}
+    for f in os.listdir(driver_dir):
+      if (os.path.isfile(os.path.join(driver_dir, f))):
+        temp = str(f).replace(".exe","")
+        self.driver_dict[temp] = os.path.join(driver_dir, f)
+        self.ui.comboBox.addItem(str(f))
+    if (len(self.driver_dict) > 0):
+      temp = os.listdir(driver_dir)[0].replace(".exe","")
+      self.ui.comboBox.setCurrentText(QCoreApplication.translate("DialogWebDriver", temp, None))

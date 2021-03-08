@@ -20,10 +20,10 @@ class Ui_DialogToolResource(object):
             DialogToolResource.setObjectName(u"DialogToolResource")
         DialogToolResource.resize(213, 160)
         application_path = os.path.dirname(__file__)
-        uidir = os.path.abspath(os.path.join(application_path, "../."))
+        self.uidir = os.path.abspath(os.path.join(application_path, "../."))
         DialogToolResource.setAcceptDrops(False)
         icon = QIcon()
-        icon.addFile(os.path.join(uidir, u"icons/icon-resource.png"), QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(os.path.join(self.uidir, u"icons/icon-resource.png"), QSize(), QIcon.Normal, QIcon.Off)
         DialogToolResource.setWindowIcon(icon)
         self.gridLayout = QGridLayout(DialogToolResource)
         self.gridLayout.setObjectName(u"gridLayout")
@@ -50,11 +50,12 @@ class Ui_DialogToolResource(object):
 
         self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
 
-        self.spinBox = QSpinBox(DialogToolResource)
-        self.spinBox.setObjectName(u"spinBox")
-        self.spinBox.setFont(font)
+        self.sBoxThreadNum = QSpinBox(DialogToolResource)
+        self.sBoxThreadNum.setObjectName(u"sBoxThreadNum")
+        self.sBoxThreadNum.setFont(font)
+        self.sBoxThreadNum.setMinimum(1)
 
-        self.gridLayout.addWidget(self.spinBox, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.sBoxThreadNum, 0, 1, 1, 1)
 
         self.label_2 = QLabel(DialogToolResource)
         self.label_2.setObjectName(u"label_2")
@@ -63,11 +64,12 @@ class Ui_DialogToolResource(object):
 
         self.gridLayout.addWidget(self.label_2, 1, 0, 1, 1)
 
-        self.spinBox_2 = QSpinBox(DialogToolResource)
-        self.spinBox_2.setObjectName(u"spinBox_2")
-        self.spinBox_2.setFont(font)
+        self.sBoxDriverObjNum = QSpinBox(DialogToolResource)
+        self.sBoxDriverObjNum.setObjectName(u"sBoxDriverObjNum")
+        self.sBoxDriverObjNum.setFont(font)
+        self.sBoxDriverObjNum.setMinimum(1)
 
-        self.gridLayout.addWidget(self.spinBox_2, 1, 1, 1, 1)
+        self.gridLayout.addWidget(self.sBoxDriverObjNum, 1, 1, 1, 1)
 
 
         self.retranslateUi(DialogToolResource)

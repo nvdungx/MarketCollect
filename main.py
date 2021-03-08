@@ -112,9 +112,9 @@ class MainWindow(QMainWindow):
 
     
     # start amazon module
-    self.amazon.start()
-    # start ebay module
-    self.ebay.start()
+    # self.amazon.start()
+    # # start ebay module
+    # self.ebay.start()
     pass
 
   def handleImportExcelFile(self):
