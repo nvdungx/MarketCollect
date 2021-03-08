@@ -477,5 +477,22 @@
   </action>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>btnStartStop</sender>
+   <signal>windowTitleChanged(QString)</signal>
+   <receiver>plainTxtLog</receiver>
+   <slot>appendPlainText(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>479</x>
+     <y>562</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>527</x>
+     <y>303</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

@@ -31,50 +31,19 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 # lib for UI
 from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog
 import PySide6.QtCore
+from PySide6.QtCore import QObject, QThread, Signal, Slot
 # import ui_src
 from ui.ui_src.Dialog import *
 
 # import module code
 from src.module_amazon import *
 from src.module_ebay import *
-
-class ReportFile:
-  def __init__(self):
-    self.path = None
-    self.wb = None
-    # after complete report status set to true
-    self.status = False
-  
-  def preview(self):
-    if (self.status == True):
-      if (self.path != None):
-        os.system("start excel ""{0}""".format(self.path))
-
-  def load_wb(self):
-    # if report file exist
-    if (os.path.exists(self.path)):
-      # load workbook
-      self.wb = openpyxl.load_workbook(self.path)
-  def save_wb(self, _path):
-    # if workbook exist
-    if (self.wb != None):
-      # check if target _path existed
-      if (os.path.exists(_path)):
-        # remove old one
-        os.remove(_path)
-      # check if dir existed
-      elif (not os.path.exists(os.path.dirname(_path))):
-        # make leaf dir and intermediate one
-        os.makedirs(os.path.dirname(_path))
-      else:
-        pass
-      self.wb.save(_path)
-      self.wb.close()
+from src.module_report import *
 
 class MainWindow(QMainWindow):
   def __init__(self):
     self.tool_dir = os.path.dirname(__file__)
-    self.report_file = ReportFile()
+    self.report = ReportApi()
     self.amazon = AmazonApi()
     self.ebay = EbayApi()
 
@@ -108,14 +77,15 @@ class MainWindow(QMainWindow):
     self.ui.btnStartStop.clicked.connect(self.handleBtnClick)
 
   def handleBtnClick(self):
-    # timer check
+    self.ui.btnStartStop.setEnabled(False)
+    self.ui.statusbar.showMessage("Running...")
+    self.bg = BackgroundThread(self)
+    self.bg.start()
 
-    
-    # start amazon module
-    # self.amazon.start()
-    # # start ebay module
-    # self.ebay.start()
-    pass
+  @Slot(bool)
+  def bgThreadCompleted(self):
+    self.ui.statusbar.showMessage("Completed", 3)
+    self.ui.btnStartStop.setEnabled(True)
 
   def handleImportExcelFile(self):
     # file selection dialog from tool dir, filter xlsx
@@ -124,7 +94,7 @@ class MainWindow(QMainWindow):
     dialog.setFileMode(QFileDialog.ExistingFile)
     if dialog.exec_() == QFileDialog.Accepted:
       select_file = dialog.selectedFiles()
-      self.report_file.path = select_file[0]
+      self.report.report_file.path = select_file[0]
     pass
   def handleSaveAsExcelFile(self):
     dialog = QFileDialog(self, 'Save As..', self.tool_dir, filter='*.xlsx')
@@ -132,11 +102,11 @@ class MainWindow(QMainWindow):
     dialog.setNameFilter("Excel (*.xlsx)")
     if dialog.exec_() == QFileDialog.Accepted:
       select_file = dialog.selectedFiles()
-      self.report_file.save_wb(select_file[0])
+      self.report.report_file.save_wb(select_file[0])
     pass
   
   def handlePreviewOutput(self):
-    self.report_file.preview()
+    self.report.report_file.preview()
     pass
 
   def handleToolVersionUpdate(self):
@@ -163,6 +133,39 @@ class MainWindow(QMainWindow):
     layout.addWidget(labelAbout)
     dialog.exec_()
     pass
+
+
+# Signals must inherit QObject
+class BackgroundSignal(QObject):
+  console = Signal(str)
+  completed = Signal(bool)
+
+class BackgroundThread(QThread):
+  def __init__(self, _parent:MainWindow):
+    self.parent = _parent
+    QThread.__init__(self, self.parent)
+    self.signals = BackgroundSignal()
+    self.signals.console.connect(self.parent.ui.plainTxtLog.appendPlainText)
+    self.signals.completed.connect(self.parent.bgThreadCompleted)
+
+  def console_log(self, val:str):
+    self.signals.console.emit(f"{val}")
+
+  def run(self):
+    self.parent.amazon.console = self.console_log
+    self.parent.ebay.console = self.console_log
+    self.parent.report.get_prd_link(os.path.abspath(os.path.join(self.parent.tool_dir, "./data/Check-Price-AMZ-EBAY.xlsx")))
+    try:
+      self.parent.amazon.get_price(self.parent.report.amazon_prd_list)
+    except Exception as e:
+      self.console_log(str(e.args))
+    try:
+      self.parent.ebay.get_price(self.parent.report.ebay_prd_list)
+    except Exception as e:
+      self.console_log(str(e.args))
+    self.parent.report.gen_report()
+    self.signals.completed.emit(True)
+
 
 if __name__ == "__main__":
 

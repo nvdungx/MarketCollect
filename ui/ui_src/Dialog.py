@@ -60,7 +60,7 @@ class DialogWebDriver(QDialog):
       if (os.path.isfile(os.path.join(driver_dir, f))):
         temp = str(f).replace(".exe","")
         self.driver_dict[temp] = os.path.join(driver_dir, f)
-        self.ui.comboBox.addItem(str(f))
+        self.ui.comboBox.addItem(temp)
     if (len(self.driver_dict) > 0):
       temp = os.listdir(driver_dir)[0].replace(".exe","")
       self.ui.comboBox.setCurrentText(QCoreApplication.translate("DialogWebDriver", temp, None))
