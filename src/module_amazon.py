@@ -52,7 +52,7 @@ class AmazonApi:
     self.driver = webdriver.Chrome(os.path.abspath(os.path.join(self.cur_dir, "../browserdriver/ChromeDriver88.0.4324.96_32b.exe")), chrome_options=self.options)
     time.sleep(2)
     self.driver.get("https://amazon.com")
-    time.sleep(2)
+    time.sleep(1)
     # find zipcode element
     if(not self.__act_click_element('//*[@id="nav-global-location-popover-link"]')):
       raise Exception("WEB_DRIVER", "Failed to find amazon html element {0}".format("zip-code-button"))
@@ -118,7 +118,7 @@ class AmazonApi:
           self.console("Failed to find amazon html element {0}".format("product-availability"))
         else:
           # OUT OF STOCK
-          if (ele.text.strip() == ""):
+          if ((ele.text.strip() == "") or (ele.text.strip()=='Currently unavailable.')):
             item.status_str = ele.text.strip()
             item.status = ItemStatus.OUT_STOCK
             item.price = 0
@@ -135,7 +135,7 @@ class AmazonApi:
       if (not result):
         result, ele = self.__act_get_element('//*[@id="olp_feature_div"]/div/span/a[@class="a-link-normal"]/span[@class="a-size-base a-color-price"]')
         if (not result):
-          elf.console("WEB_DRIVER: Failed to find product price, please update the target element xpath")
+          self.console("WEB_DRIVER: Failed to find product price, please update the target element xpath")
           continue
         else:
           item.multi_vendor = True
