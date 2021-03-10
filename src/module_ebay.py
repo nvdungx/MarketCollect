@@ -11,6 +11,14 @@ from requests.auth import HTTPBasicAuth
 
 from src.product import *
 
+# only need to view public data(i.e. price)
+# application request access token with client ID and clien secret
+# get the access token
+# api request with access token (expire after 7200s)
+
+CLIENT_TOKEN_REQ_URL = "https://api.ebay.com/identity/v1/oauth2/token"
+
+
 app_id = b"VanDungN-marketco-PRD-9dc78fcfb-e9562bf7"
 dev_id = b"f930b43d-4c91-4479-bb6d-171eb4472b7c"
 cert_id = b"PRD-dc78fcfbb666-d7db-4299-ab91-d553"
