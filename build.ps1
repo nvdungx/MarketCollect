@@ -8,4 +8,4 @@ pyinstaller --onedir --specpath "./" --workpath "./temp" --distpath "./build" --
 Copy-Item -Recurse -Path ".venv\Lib\site-packages\PySide6\plugins" -Destination "build\MarketCollect\PySide6"
 Copy-Item -Recurse -Path ".venv\Lib\site-packages\PySide6\translations" -Destination "build\MarketCollect\PySide6"
 Copy-Item -Recurse -Path ".venv\Lib\site-packages\PySide6\qt.conf" -Destination "build\MarketCollect\PySide6"
-rm -r temp/*
+Remove-Item -Recurse temp/*

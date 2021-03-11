@@ -40,11 +40,12 @@ from src.module_amazon import *
 from src.module_ebay import *
 from src.module_report import *
 
-# import pydevd
+import pydevd
 
 class MainWindow(QMainWindow):
   def __init__(self):
     self.tool_dir = os.path.dirname(__file__)
+    self.valid_execution = False
     self.report = ReportApi()
     self.amazon = AmazonApi()
     self.ebay = EbayApi()
@@ -76,6 +77,7 @@ class MainWindow(QMainWindow):
     self.ui.actionAbout.triggered.connect(self.handleAboutInfo)
 
     # start button operation
+    self.ui.btnStartStop.setEnabled(False)
     self.ui.btnStartStop.clicked.connect(self.handleBtnClick)
 
   def handleBtnClick(self):
@@ -95,17 +97,30 @@ class MainWindow(QMainWindow):
     # select single existed file
     dialog.setFileMode(QFileDialog.ExistingFile)
     if dialog.exec_() == QFileDialog.Accepted:
-      select_file = dialog.selectedFiles()
-      self.report.report_file.path = select_file[0]
-    pass
+      try:
+        select_file = dialog.selectedFiles()
+        if (len(select_file)>0):
+          if (not self.report.set_report_file(select_file[0])):
+            self.ui.statusbar.showMessage("ERROR: Invalid file path or file is not exist", 2)
+        else:
+          self.ui.statusbar.showMessage("ERROR: Invalid file", 2)
+      except:
+        self.ui.statusbar.showMessage("ERROR: Failed to import file", 2)
+
   def handleSaveAsExcelFile(self):
     dialog = QFileDialog(self, 'Save As..', self.tool_dir, filter='*.xlsx')
     dialog.setFileMode(QFileDialog.AnyFile)
     dialog.setNameFilter("Excel (*.xlsx)")
     if dialog.exec_() == QFileDialog.Accepted:
-      select_file = dialog.selectedFiles()
-      self.report.report_file.save_wb(select_file[0])
-    pass
+      try:
+        select_file = dialog.selectedFiles()
+        if (len(select_file)>0):
+          if (not self.report.save_report(select_file[0])):
+            self.ui.statusbar.showMessage("ERROR: Failed to save report file", 2)
+        else:
+          self.ui.statusbar.showMessage("ERROR: Invalid file path")
+      except:
+        self.ui.statusbar.showMessage("ERROR: Failed to save report file", 2)
   
   def handlePreviewOutput(self):
     self.report.report_file.preview()
@@ -154,7 +169,7 @@ class BackgroundThread(QThread):
     self.signals.console.emit(f"{val}")
 
   def run(self):
-    # pydevd.settrace(suspend=False)
+    pydevd.settrace(suspend=False)
     self.parent.amazon.console = self.console_log
     self.parent.ebay.console = self.console_log
     self.parent.report.get_prd_link(os.path.abspath(os.path.join(self.parent.tool_dir, "./data/Check-Price-AMZ-EBAY.xlsx")))
