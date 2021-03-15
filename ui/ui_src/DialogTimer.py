@@ -18,7 +18,7 @@ class Ui_DialogTimer(object):
     def setupUi(self, DialogTimer):
         if not DialogTimer.objectName():
             DialogTimer.setObjectName(u"DialogTimer")
-        DialogTimer.resize(375, 320)
+        DialogTimer.resize(375, 375)
         application_path = os.path.dirname(__file__)
         self.uidir = os.path.abspath(os.path.join(application_path, "../."))
         sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)

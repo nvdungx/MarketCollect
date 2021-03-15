@@ -7,6 +7,11 @@ import pathlib, asyncio
 import traceback
 import xml.etree.ElementTree as xmlET
 
+# html string
+import html
+from io import StringIO
+from html.parser import HTMLParser
+
 # lib for excel operation
 import openpyxl
 
@@ -31,7 +36,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 # lib for UI
 from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog
 import PySide6.QtCore
-from PySide6.QtCore import QObject, QThread, Signal, Slot
+from PySide6.QtCore import QObject, QThread, Signal, Slot, QThreadPool, QRunnable
 # import ui_src
 from ui.ui_src.Dialog import *
 
@@ -39,8 +44,29 @@ from ui.ui_src.Dialog import *
 from src.module_amazon import *
 from src.module_ebay import *
 from src.module_report import *
+from src.module_xml import *
 
 import pydevd
+
+MAX_THREAD_NUM = 10
+MAX_OBJ_NUM = 3
+
+class MLStripper(HTMLParser):
+  def __init__(self):
+    super().__init__()
+    self.reset()
+    self.strict = False
+    self.convert_charrefs= True
+    self.text = StringIO()
+  def handle_data(self, d):
+    self.text.write(d)
+  def get_data(self):
+    return self.text.getvalue()
+
+def strip_tags(html):
+  s = MLStripper()
+  s.feed(str(html))
+  return s.get_data()
 
 class MainWindow(QMainWindow):
   def __init__(self):
@@ -55,11 +81,11 @@ class MainWindow(QMainWindow):
     self.ui.setupUi(self)
 
     # create sub view element
-    self.subViewSelDriver = DialogWebDriver()
-    self.subViewEmail = DialogEmail()
-    self.subViewFormula = DialogFormula()
-    self.subViewTimer = DialogTimer()
-    self.subViewToolResource = DialogToolResource()
+    self.subViewSelDriver = DialogWebDriver(self)
+    self.subViewEmail = DialogEmail(self)
+    self.subViewFormula = DialogFormula(self)
+    self.subViewTimer = DialogTimer(self)
+    self.subViewToolResource = DialogToolResource(self)
 
     # push api to get/set data from Dialog
     self.ui.actionWeb_Browser_Driver.triggered.connect(self.subViewSelDriver.exec_)
@@ -80,20 +106,90 @@ class MainWindow(QMainWindow):
     self.ui.btnStartStop.setEnabled(False)
     self.ui.btnStartStop.clicked.connect(self.handleBtnClick)
 
+    self.tPool = QThreadPool(self)
+    self.tPool.setMaxThreadCount(1)
+    # load tool setting
+    self.tPool.start(LoadToolConfig(self))
+
+    self.pre_paths = {"import":"", "saveas":""}
+    self.toolCfg = None
+
   def handleBtnClick(self):
     self.ui.btnStartStop.setEnabled(False)
     self.ui.statusbar.showMessage("Running...")
-    self.bg = BackgroundThread(self)
-    self.bg.start()
+    # get current settings data push to module ebay, amazon, report
+    # number of web object, thread -> amazon (open web driver)
+    # thread -> ebay (get oauth token)
+    # thread -> report (get product)
+    # push product to amazon, ebay
+    # get product info out-> push to report
+    self.toolCfg.parse()
 
   @Slot(bool)
-  def bgThreadCompleted(self):
+  def bgThreadCompleted(self, val:bool):
     self.ui.statusbar.showMessage("Completed", 3)
     self.ui.btnStartStop.setEnabled(True)
 
+  @Slot(XmlDoc)
+  def loadGUISetting(self, config):
+    # gui settings from xml shall be loaded to tool value
+    # value change in tool settings shall be reflect to xml file
+    # execution operation shall take data from tool setting component or xml file
+    if (config != None):
+      self.toolCfg = config
+      val = self.toolCfg.get_dict()
+
+      # previous save path
+      self.pre_paths["import"] = val["FILE"]["IMPORT-LOC"]
+      self.pre_paths["saveas"] = val["FILE"]["SAVE-AS"]
+
+      # number thread spawn
+      num_thread = int(val["SETTINGS"]["TOOL-RESOURCE"]["THREAD-NUM"])
+      if (num_thread > MAX_THREAD_NUM):
+        num_thread = MAX_THREAD_NUM
+      self.tPool.setMaxThreadCount(num_thread)
+      self.subViewToolResource.ui.sBoxThreadNum.setValue(num_thread)
+
+      # number of web driver object
+      num_obj = int(val["SETTINGS"]["TOOL-RESOURCE"]["OBJECT-NUM"])
+      if (num_obj > MAX_OBJ_NUM):
+        num_obj = MAX_OBJ_NUM
+      self.subViewToolResource.ui.sBoxDriverObjNum.setValue(num_obj)
+
+      # formula
+      formula = val["SETTINGS"]["FORMULA"]
+      if (formula != None) and (formula != ""):
+        self.subViewFormula.ui.lineEditFormula.setText(formula)
+
+      # selected web driver
+      idx = self.subViewSelDriver.ui.comboBox.findText(val["SETTINGS"]["SELECTED-DRIVER"])
+      if (idx != -1):
+        self.subViewSelDriver.ui.comboBox.setCurrentIndex(idx)
+
+      timer_list = val["SETTINGS"]["TIMER-LIST"]["TIMER"]
+      if (timer_list != None):
+        # update timer
+        if not (isinstance(timer_list, list)):
+          timer_list = [timer_list]
+        for item in timer_list:
+          self.subViewTimer.addTimer(item)
+
+      email_list = val["SETTINGS"]["EMAIL-LIST"]["EMAIL"]
+      if (email_list != None):
+        # update email
+        if not (isinstance(email_list, list)):
+          email_list = [email_list]
+        for item in email_list:
+          self.subViewEmail.addEmail(item)
+    else:
+      self.ui.plainTxtLog.appendPlainText("[ERROR]: Failed to load settings")
+
   def handleImportExcelFile(self):
     # file selection dialog from tool dir, filter xlsx
-    dialog = QFileDialog(self, 'Report File', self.tool_dir, filter="*.xlsx")
+    import_dir = self.tool_dir
+    if (self.pre_paths["import"] != "") and (self.pre_paths["import"] != None):
+      import_dir = self.pre_paths["import"]
+    dialog = QFileDialog(self, 'Report File', import_dir, filter="*.xlsx")
     # select single existed file
     dialog.setFileMode(QFileDialog.ExistingFile)
     if dialog.exec_() == QFileDialog.Accepted:
@@ -102,13 +198,21 @@ class MainWindow(QMainWindow):
         if (len(select_file)>0):
           if (not self.report.set_report_file(select_file[0])):
             self.ui.statusbar.showMessage("ERROR: Invalid file path or file is not exist", 2)
+          else:
+            self.ui.btnStartStop.setEnabled(True)
+            self.pre_paths["import"] = os.path.dirname(select_file[0])
+            self.toolCfg.set_element(".//IMPORT-LOC", os.path.dirname(select_file[0]))
+            self.toolCfg.save()
         else:
           self.ui.statusbar.showMessage("ERROR: Invalid file", 2)
       except:
         self.ui.statusbar.showMessage("ERROR: Failed to import file", 2)
 
   def handleSaveAsExcelFile(self):
-    dialog = QFileDialog(self, 'Save As..', self.tool_dir, filter='*.xlsx')
+    save_dir = self.tool_dir
+    if ((self.pre_paths["saveas"] != "") and (self.pre_paths["saveas"] != None)):
+      save_dir = self.pre_paths["saveas"]
+    dialog = QFileDialog(self, 'Save As..', save_dir, filter='*.xlsx')
     dialog.setFileMode(QFileDialog.AnyFile)
     dialog.setNameFilter("Excel (*.xlsx)")
     if dialog.exec_() == QFileDialog.Accepted:
@@ -117,13 +221,17 @@ class MainWindow(QMainWindow):
         if (len(select_file)>0):
           if (not self.report.save_report(select_file[0])):
             self.ui.statusbar.showMessage("ERROR: Failed to save report file", 2)
+          else:
+            self.pre_paths["saveas"] = os.path.dirname(select_file[0])
+            self.toolCfg.set_element(".//SAVE-AS", os.path.dirname(select_file[0]))
+            self.toolCfg.save()
         else:
           self.ui.statusbar.showMessage("ERROR: Invalid file path")
       except:
         self.ui.statusbar.showMessage("ERROR: Failed to save report file", 2)
-  
+
   def handlePreviewOutput(self):
-    self.report.report_file.preview()
+    self.report.preview()
     pass
 
   def handleToolVersionUpdate(self):
@@ -152,10 +260,32 @@ class MainWindow(QMainWindow):
     pass
 
 
+
+
+class LoadToolConfig(QRunnable):
+  def __init__(self, _parent):
+    super().__init__()
+    self.parent = _parent
+    self.signals = BackgroundSignal()
+    self.signals.guisetting.connect(self.parent.loadGUISetting)
+    self.signals.console.connect(self.parent.ui.plainTxtLog.appendPlainText)
+
+  def console_log(self, val:str):
+    self.signals.console.emit(f"{val}")
+  def run(self):
+    pydevd.settrace(suspend=False)
+    toolCfg = XmlDoc("user_tool_setting.xml", _encrypt=False, _console=self.console_log)
+    if (toolCfg.parse()):
+      # return data to GUI UI
+      self.signals.guisetting.emit(toolCfg)
+    else:
+      self.signals.guisetting.emit(None)
+
 # Signals must inherit QObject
 class BackgroundSignal(QObject):
   console = Signal(str)
   completed = Signal(bool)
+  guisetting = Signal(dict)
 
 class BackgroundThread(QThread):
   def __init__(self, _parent:MainWindow):
@@ -172,7 +302,6 @@ class BackgroundThread(QThread):
     pydevd.settrace(suspend=False)
     self.parent.amazon.console = self.console_log
     self.parent.ebay.console = self.console_log
-    self.parent.report.get_prd_link(os.path.abspath(os.path.join(self.parent.tool_dir, "./data/Check-Price-AMZ-EBAY.xlsx")))
     try:
       self.parent.amazon.get_price(self.parent.report.amazon_prd_list)
     except Exception as e:

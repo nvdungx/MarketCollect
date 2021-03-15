@@ -4,8 +4,6 @@ from collections import Counter, OrderedDict
 from dataclasses import dataclass, field
 from datetime import datetime
 import pathlib, asyncio
-import openpyxl
-import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -16,7 +14,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait as wait
 #from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
-from src.product import *
+from src.model_product import *
 
 #LIST_TAG = [
 #  '//*/span[@id="productTitle"]',

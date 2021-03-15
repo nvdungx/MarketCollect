@@ -54,6 +54,7 @@ class Ui_DialogToolResource(object):
         self.sBoxThreadNum.setObjectName(u"sBoxThreadNum")
         self.sBoxThreadNum.setFont(font)
         self.sBoxThreadNum.setMinimum(1)
+        self.sBoxThreadNum.setMaximum(10)
 
         self.gridLayout.addWidget(self.sBoxThreadNum, 0, 1, 1, 1)
 
@@ -68,6 +69,7 @@ class Ui_DialogToolResource(object):
         self.sBoxDriverObjNum.setObjectName(u"sBoxDriverObjNum")
         self.sBoxDriverObjNum.setFont(font)
         self.sBoxDriverObjNum.setMinimum(1)
+        self.sBoxDriverObjNum.setMaximum(3)
 
         self.gridLayout.addWidget(self.sBoxDriverObjNum, 1, 1, 1, 1)
 

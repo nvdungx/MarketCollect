@@ -1,7 +1,9 @@
-import os, sys, re, json, collections, time, enum
+import os, sys, re, json, collections, time, enum, shutil
+import pathlib, asyncio
 from operator import itemgetter, attrgetter, methodcaller
 from collections import Counter, OrderedDict
 from dataclasses import dataclass, field
+from datetime import datetime
 
 class ItemStatus(enum.Enum):
   NONE = 1
@@ -22,7 +24,7 @@ class Product:
   currency:str
   status:ItemStatus
   multi_vendor:bool
-  def __init__(self, _link="", _name="", _price=0, _cur="", _status=ItemStatus.NONE, _mul=False, _row_idx=1):
+  def __init__(self, _item_num=1, _link="", _name="", _price=0, _cur="", _status=ItemStatus.NONE, _mul=False, _row_idx=1):
     # product link
     self.link = _link
     # product name
@@ -37,3 +39,4 @@ class Product:
     self.multi_vendor = _mul
     # row idx(count)
     self.row_idx = _row_idx
+    self.item_num = _item_num

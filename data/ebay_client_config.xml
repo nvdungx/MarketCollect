@@ -1,0 +1,9 @@
+<!-- store ebay client side tool infomation: tool id, cert and minted token(7200s update) -->
+<EBAY-CLIENT>
+  <INFO>
+    <TOOL-ID>VanDungN-marketco-PRD-9dc78fcfb-e9562bf7<TOOL-ID>
+    <DEV-ID>f930b43d-4c91-4479-bb6d-171eb4472b7c<DEV-ID>
+    <TOOL-CERT>PRD-dc78fcfbb666-d7db-4299-ab91-d553<TOOL-CERT>
+  </INFO>
+  <TOKEN-MINT></TOKEN-MINT>
+<EBAY-CLIENT>

@@ -217,6 +217,7 @@ class Ui_MainWindow(object):
         self.menuHelp.addAction(self.actionAbout)
 
         self.retranslateUi(MainWindow)
+        self.btnStartStop.windowTitleChanged.connect(self.plainTxtLog.appendPlainText)
 
         QMetaObject.connectSlotsByName(MainWindow)
     # setupUi

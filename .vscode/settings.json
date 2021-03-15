@@ -1,12 +1,14 @@
 {
   "editor.tabSize": 2,
   "cSpell.words": [
+    "HMAC",
     "astimezone",
     "csms",
     "ocpp",
     "pagetxt",
+    "pbkdf",
     "tlstep"
   ],
   "python.pythonPath": ".venv\\Scripts\\python.exe",
-  "files.trimTrailingWhitespace": false
+  "files.trimTrailingWhitespace": true
 }

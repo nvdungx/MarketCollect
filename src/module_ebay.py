@@ -9,7 +9,7 @@ import requests
 import base64
 from requests.auth import HTTPBasicAuth
 
-from src.product import *
+from src.model_product import *
 
 # only need to view public data(i.e. price)
 # application request access token with client ID and clien secret
