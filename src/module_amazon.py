@@ -24,7 +24,7 @@ from src.model_product import *
 #  '//*[@id="olp_feature_div"]/div/span/a[@class="a-link-normal"]/span[@class="a-size-base a-color-price"]'
 #]
 class AmazonApi:
-  def __init__(self):
+  def __init__(self, _console=None):
     self.cur_dir = os.path.dirname(__file__)
     # self.capa = DesiredCapabilities.CHROME
     # self.capa["pageLoadStrategy"] = "none"
@@ -34,7 +34,8 @@ class AmazonApi:
     # self.options.add_argument("--headless")
     # self.options.add_argument("--disable-notifications")
     self.driver = None
-    self.console = None
+    self.console = _console
+    self.number_obj = None
     pass
 
   # def __valid_page(self, tag_list):
@@ -57,7 +58,7 @@ class AmazonApi:
     # //*[@id="GLUXZipUpdateInput"]
     if(not self.__act_send_data('//*[@id="GLUXZipUpdateInput"]', "97124")):
       raise Exception("WEB_DRIVER", "Failed to find amazon html element {0}".format("zip-code-textbox"))
-    # GLUXZipUpdate - update code button 
+    # GLUXZipUpdate - update code button
     if(not self.__act_click_element('//*[@id="GLUXZipUpdate"]')):
       raise Exception("WEB_DRIVER", "Failed to find amazon html element {0}".format("zip-code-update-button"))
     # continue - GLUXConfirmAction - /html/body/div[5]/div/div/div[2]/span/span

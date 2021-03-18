@@ -15,7 +15,7 @@ class ReportFile:
     self.wb = None
     # after complete report status set to true
     self.status = False
-  
+
   def preview(self):
     # preview output file after operation complete
     status = False
@@ -63,10 +63,10 @@ class ReportFile:
       return False
 
 class ReportApi:
-  def __init__(self):
+  def __init__(self, _console=None):
     self.amazon_prd_list = []
     self.ebay_prd_list = []
-    self.console = None
+    self.console = _console
     self.__excel_location = None
     self.__start_row = 0
     self.__col_idx = 0
@@ -77,7 +77,7 @@ class ReportApi:
 
   def __loading_excel_ele_location(self):
     # load data from excel_element_location.xml file
-    self.__excel_location = XmlDoc("excel_element_location.xml", _encrypt=False, _console=self.console)
+    self.__excel_location = XmlDoc("excel_element_location.xml", _console=self.console)
     self.__excel_location.parse()
     data_dict = self.__excel_location.get_dict()
     self.__start_row, self.__col_idx = openpyxl.utils.coordinate_to_tuple(data_dict["INDEX-COL"])
@@ -91,9 +91,9 @@ class ReportApi:
     pass
 
 
-  def console_log(self, val:str):
+  def __console_log(self, val:str):
     if (self.console != None):
-      self.console(val)
+      self.console(f"[WARN][REPORT]: {val}")
 
   def set_report_file(self, file_path):
     # import report file
@@ -110,28 +110,35 @@ class ReportApi:
 
   def preview(self):
     if(False == self.__report_file.preview()):
-      self.console_log("[WARN]: Report file is not completed")
+      self.__console_log("Report file is not completed")
 
   def save_report(self, file_path=None):
     # save wb to selected file
     return self.__report_file.save_wb(file_path)
 
   def get_prd_link(self):
-    if (self.__report_file.load_wb()):
-      ws = self.__report_file.wb.active
-      for row in range(self.__start_row, ws.max_row):
-        for loc in ["AMAZON-LOC", "EBAY-LOC"]:
-          link_val = ws.cell(row, self.__col[loc]["LINK"]).value
-          item_number = ws.cell(row, self.__col_idx).value
-          if ((val != None) and (val != "") and (item_number != None) and (item_number != "")):
-            temp_prod = Product(_link=val,_row_idx=row, _item_num=int(item_number))
-            if (loc == "AMAZON-LOC"):
-              self.amazon_prd_list.append(temp_prod)
-            else:
-              self.ebay_prd_list.append(temp_prod)
-          else:
-            self.console_log(f"[WARN]: Item at row {row} missing link or SI number")
-    else:
+    try:
+      if (self.__report_file.load_wb()):
+        ws = self.__report_file.wb.active
+        for row in range(self.__start_row, ws.max_row):
+          for loc in ["AMAZON-LOC", "EBAY-LOC"]:
+            link_val = ws.cell(row, self.__col[loc]["LINK"]).value
+            item_number = ws.cell(row, self.__col_idx).value
+            if ((link_val != None) and (link_val != "")):
+              if ((item_number != None) and (item_number != "")):
+                temp_prod = Product(_link=link_val,_row_idx=row, _item_num=int(item_number))
+              else:
+                temp_prod = Product(_link=link_val,_row_idx=row, _item_num=1)
+                self.__console_log(f"Item at row {row} missing link or SI number")
+              if (loc == "AMAZON-LOC"):
+                self.amazon_prd_list.append(temp_prod)
+              else:
+                self.ebay_prd_list.append(temp_prod)
+        return True
+      else:
+        return False
+    except Exception as e:
+      self.__console_log(f"Error occur during get product information from excel file {str(e)}")
       return False
 
   def gen_report(self):

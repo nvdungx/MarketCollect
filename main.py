@@ -70,12 +70,6 @@ def strip_tags(html):
 
 class MainWindow(QMainWindow):
   def __init__(self):
-    self.tool_dir = os.path.dirname(__file__)
-    self.valid_execution = False
-    self.report = ReportApi()
-    self.amazon = AmazonApi()
-    self.ebay = EbayApi()
-
     super(MainWindow, self).__init__()
     self.ui = Ui_MainWindow()
     self.ui.setupUi(self)
@@ -111,8 +105,15 @@ class MainWindow(QMainWindow):
     # load tool setting
     self.tPool.start(LoadToolConfig(self))
 
+    self.tool_dir = os.path.dirname(__file__)
+    self.valid_execution = False
+    self.report = ReportApi()
+    self.amazon = AmazonApi()
+    self.ebay = EbayApi()
     self.pre_paths = {"import":"", "saveas":""}
     self.toolCfg = None
+    self.email_list = []
+    self.countdown_timers = []
 
   def handleBtnClick(self):
     self.ui.btnStartStop.setEnabled(False)
@@ -123,12 +124,28 @@ class MainWindow(QMainWindow):
     # thread -> report (get product)
     # push product to amazon, ebay
     # get product info out-> push to report
-    self.toolCfg.parse()
+
+  @Slot(dict)
+  def bgModuleCompleted(self, status:dict):
+    # push data from Module to report
+    pass
 
   @Slot(bool)
-  def bgThreadCompleted(self, val:bool):
-    self.ui.statusbar.showMessage("Completed", 3)
-    self.ui.btnStartStop.setEnabled(True)
+  def bgLoadExcelInfoCompleted(self, val:bool):
+    if (val == True):
+      self.ui.statusbar.showMessage("Load product information from excel completed")
+      self.ui.btnStartStop.setEnabled(True)
+    else:
+      self.ui.statusbar.showMessage("Failed to load product information from input file")
+      self.ui.btnStartStop.setEnabled(False)
+
+  @Slot(bool)
+  def bgLoadToolCompleted(self, val:bool):
+    if (val == True):
+      self.ui.statusbar.showMessage("Load tool settings completed")
+      self.tPool.start(MintEbayToken(self))
+    else:
+      self.ui.statusbar.showMessage("Failed to load tool settings")
 
   @Slot(XmlDoc)
   def loadGUISetting(self, config):
@@ -166,21 +183,26 @@ class MainWindow(QMainWindow):
       if (idx != -1):
         self.subViewSelDriver.ui.comboBox.setCurrentIndex(idx)
 
-      timer_list = val["SETTINGS"]["TIMER-LIST"]["TIMER"]
-      if (timer_list != None):
-        # update timer
-        if not (isinstance(timer_list, list)):
-          timer_list = [timer_list]
-        for item in timer_list:
-          self.subViewTimer.addTimer(item)
+      if (val["SETTINGS"]["TIMER-LIST"] != None):
+        if ("TIMER" in val["SETTINGS"]["TIMER-LIST"]):
+          timer_list = val["SETTINGS"]["TIMER-LIST"]["TIMER"]
+          if (timer_list != None):
+            # update timer
+            if not (isinstance(timer_list, list)):
+              timer_list = [timer_list]
+            for idx, item in enumerate(timer_list):
+              self.subViewTimer.addTimer(item)
+              self.addSubViewTimer(f"labelTimer{idx}", item)
 
-      email_list = val["SETTINGS"]["EMAIL-LIST"]["EMAIL"]
-      if (email_list != None):
-        # update email
-        if not (isinstance(email_list, list)):
-          email_list = [email_list]
-        for item in email_list:
-          self.subViewEmail.addEmail(item)
+      if (val["SETTINGS"]["EMAIL-LIST"] != None):
+        if ("EMAIL" in val["SETTINGS"]["EMAIL-LIST"]):
+          email_list = val["SETTINGS"]["EMAIL-LIST"]["EMAIL"]
+          if (email_list != None):
+            # update email
+            if not (isinstance(email_list, list)):
+              email_list = [email_list]
+            for item in email_list:
+              self.subViewEmail.addEmail(item)
     else:
       self.ui.plainTxtLog.appendPlainText("[ERROR]: Failed to load settings")
 
@@ -197,16 +219,17 @@ class MainWindow(QMainWindow):
         select_file = dialog.selectedFiles()
         if (len(select_file)>0):
           if (not self.report.set_report_file(select_file[0])):
-            self.ui.statusbar.showMessage("ERROR: Invalid file path or file is not exist", 2)
+            self.ui.statusbar.showMessage("ERROR: Invalid file path or file is not exist")
           else:
-            self.ui.btnStartStop.setEnabled(True)
+            # lunch collect product info from excel
+            self.tPool.start(LoadExcelInfo(self))
             self.pre_paths["import"] = os.path.dirname(select_file[0])
             self.toolCfg.set_element(".//IMPORT-LOC", os.path.dirname(select_file[0]))
             self.toolCfg.save()
         else:
-          self.ui.statusbar.showMessage("ERROR: Invalid file", 2)
+          self.ui.statusbar.showMessage("ERROR: Invalid file")
       except:
-        self.ui.statusbar.showMessage("ERROR: Failed to import file", 2)
+        self.ui.statusbar.showMessage("ERROR: Failed to import file")
 
   def handleSaveAsExcelFile(self):
     save_dir = self.tool_dir
@@ -220,7 +243,7 @@ class MainWindow(QMainWindow):
         select_file = dialog.selectedFiles()
         if (len(select_file)>0):
           if (not self.report.save_report(select_file[0])):
-            self.ui.statusbar.showMessage("ERROR: Failed to save report file", 2)
+            self.ui.statusbar.showMessage("ERROR: Failed to save report file")
           else:
             self.pre_paths["saveas"] = os.path.dirname(select_file[0])
             self.toolCfg.set_element(".//SAVE-AS", os.path.dirname(select_file[0]))
@@ -228,7 +251,7 @@ class MainWindow(QMainWindow):
         else:
           self.ui.statusbar.showMessage("ERROR: Invalid file path")
       except:
-        self.ui.statusbar.showMessage("ERROR: Failed to save report file", 2)
+        self.ui.statusbar.showMessage("ERROR: Failed to save report file")
 
   def handlePreviewOutput(self):
     self.report.preview()
@@ -259,7 +282,74 @@ class MainWindow(QMainWindow):
     dialog.exec_()
     pass
 
+  def addSubViewTimer(self, label_name, count_down_val):
+    labelTimer0 = QLabel(self.ui.groupBox)
+    labelTimer0.setObjectName(label_name)
+    font7 = QFont()
+    font7.setPointSize(12)
+    font7.setBold(True)
+    font7.setItalic(False)
+    font7.setUnderline(False)
+    labelTimer0.setFont(font7)
+    labelTimer0.setAlignment(Qt.AlignCenter)
 
+    self.ui.verticalLayout.addWidget(labelTimer0)
+    labelTimer0.setText(QCoreApplication.translate("MainWindow", count_down_val, None))
+    self.countdown_timers.append(CountdownTimer(label_name, count_down_val, labelTimer0))
+
+  def clearSubViewTimer(self):
+    for item in self.countdown_timers:
+      self.ui.verticalLayout.takeAt(0)
+      item.refObj.deleteLater()
+    self.countdown_timers.clear()
+
+class CountdownTimer:
+  def __init__(self, _name, _value, _refObj):
+    self.refObj = _refObj
+    self.name = _name
+    self.value = _value
+
+class GetAmazonProduct(QRunnable):
+  def __init__(self, _parent):
+    super().__init__()
+    self.parent = _parent
+    self.signals = BackgroundSignal()
+    self.signals.console.connect(self.parent.ui.plainTxtLog.appendPlainText)
+    pass
+  def console_log(self, val:str):
+    self.signals.console.emit(f"{val}")
+  def run(self):
+    pydevd.settrace(suspend=False)
+    pass
+
+class MintEbayToken(QRunnable):
+  def __init__(self, _parent):
+    super().__init__()
+    self.parent = _parent
+    self.signals = BackgroundSignal()
+    self.signals.console.connect(self.parent.ui.plainTxtLog.appendPlainText)
+
+  def console_log(self, val:str):
+    self.signals.console.emit(f"{val}")
+  def run(self):
+    pydevd.settrace(suspend=False)
+    if (self.parent.ebay.get_token()):
+      self.signals.console.emit("[EBAY]: Get client token successful")
+    else:
+      self.signals.console.emit("[ERROR]: Failed to get Ebay client token")
+
+class GetEbayProduct(QRunnable):
+  def __init__(self, _parent):
+    super().__init__()
+    self.parent = _parent
+    self.signals = BackgroundSignal()
+    self.signals.console.connect(self.parent.ui.plainTxtLog.appendPlainText)
+    pass
+  def console_log(self, val:str):
+    self.signals.console.emit(f"{val}")
+  def run(self):
+    pydevd.settrace(suspend=False)
+    pass
 
 
 class LoadToolConfig(QRunnable):
@@ -269,56 +359,46 @@ class LoadToolConfig(QRunnable):
     self.signals = BackgroundSignal()
     self.signals.guisetting.connect(self.parent.loadGUISetting)
     self.signals.console.connect(self.parent.ui.plainTxtLog.appendPlainText)
-
+    self.signals.completed.connect(self.parent.bgLoadToolCompleted)
   def console_log(self, val:str):
     self.signals.console.emit(f"{val}")
   def run(self):
     pydevd.settrace(suspend=False)
-    toolCfg = XmlDoc("user_tool_setting.xml", _encrypt=False, _console=self.console_log)
+    toolCfg = XmlDoc("user_tool_setting.xml", _console=self.console_log)
     if (toolCfg.parse()):
       # return data to GUI UI
       self.signals.guisetting.emit(toolCfg)
+      self.signals.completed.emit(True)
     else:
       self.signals.guisetting.emit(None)
+      self.signals.completed.emit(False)
+
+class LoadExcelInfo(QRunnable):
+  def __init__(self, _parent):
+    super().__init__()
+    self.parent = _parent
+    self.signals = BackgroundSignal()
+    self.signals.completed.connect(self.parent.bgLoadExcelInfoCompleted)
+    self.signals.console.connect(self.parent.ui.plainTxtLog.appendPlainText)
+  def console_log(self, val:str):
+    self.signals.console.emit(f"{val}")
+  def run(self):
+    pydevd.settrace(suspend=False)
+    self.parent.report.console = self.console_log
+    if (self.parent.report.get_prd_link()):
+      self.signals.completed.emit(True)
+    else:
+      self.signals.completed.emit(False)
+    self.parent.report.console = None
 
 # Signals must inherit QObject
 class BackgroundSignal(QObject):
   console = Signal(str)
   completed = Signal(bool)
-  guisetting = Signal(dict)
-
-class BackgroundThread(QThread):
-  def __init__(self, _parent:MainWindow):
-    self.parent = _parent
-    QThread.__init__(self, self.parent)
-    self.signals = BackgroundSignal()
-    self.signals.console.connect(self.parent.ui.plainTxtLog.appendPlainText)
-    self.signals.completed.connect(self.parent.bgThreadCompleted)
-
-  def console_log(self, val:str):
-    self.signals.console.emit(f"{val}")
-
-  def run(self):
-    pydevd.settrace(suspend=False)
-    self.parent.amazon.console = self.console_log
-    self.parent.ebay.console = self.console_log
-    try:
-      self.parent.amazon.get_price(self.parent.report.amazon_prd_list)
-    except Exception as e:
-      self.console_log(str(e.args))
-    try:
-      self.parent.ebay.get_price(self.parent.report.ebay_prd_list)
-    except Exception as e:
-      self.console_log(str(e.args))
-    self.parent.report.gen_report()
-    self.signals.completed.emit(True)
-
+  guisetting = Signal(XmlDoc)
 
 if __name__ == "__main__":
-
   app = QApplication(sys.argv)
-
   window = MainWindow()
   window.show()
-
   sys.exit(app.exec_())

@@ -1,23 +1,27 @@
 <TOOL>
   <FILE>
-    <IMPORT-LOC>C:/Users/Admin/Documents/Workspace/01.Projects/MarketCollect/data</IMPORT-LOC>
+    <IMPORT-LOC>C:/Workspaces/MarketCollect/data</IMPORT-LOC>
     <SAVE-AS />
     <TEMP-PREV />
   </FILE>
   <SETTINGS>
     <TIMER-LIST>
-      <TIMER>10:00:00</TIMER>
-      <TIMER>10:00:00</TIMER>
+      <TIMER>00:20:01</TIMER>
+      <TIMER>01:00:11</TIMER>
+      <TIMER>00:59:21</TIMER>
     </TIMER-LIST>
     <EMAIL-LIST>
       <EMAIL>nvdung694@gmail.com</EMAIL>
+      <EMAIL>sample@gmail.com</EMAIL>
+      <EMAIL>sample@gmail.com</EMAIL>
+      <EMAIL>sample@gmail.com</EMAIL>
     </EMAIL-LIST>
     <TOOL-RESOURCE>
-      <THREAD-NUM>2</THREAD-NUM>
+      <THREAD-NUM>1</THREAD-NUM>
       <OBJECT-NUM>1</OBJECT-NUM>
     </TOOL-RESOURCE>
     <SELECTED-DRIVER>ChromeDriver88.0.4324.96_32b</SELECTED-DRIVER>
-    <FORMULA>=&lt;A2+B2+AC1&gt;</FORMULA>
+    <FORMULA>=A2+B2+AC1</FORMULA>
   </SETTINGS>
   <HELP>
     <UPDATE-URL>www.sample.con/api/v1/update</UPDATE-URL>

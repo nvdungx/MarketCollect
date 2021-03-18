@@ -18,7 +18,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 # -> push to module report (excel location)
 # -> load/save user tool setting
 class XmlDoc:
-  def __init__(self, _file, _encrypt=False, _console=None):
+  def __init__(self, _file, _console=None):
     self.console = _console
     self.dict_data = {}
     self.xmltree = None
@@ -30,7 +30,6 @@ class XmlDoc:
       self.file = os.path.abspath(os.path.join(current_dir, f"../data/{_file}"))
     else:
       self.file = None
-    self.encrypt = _encrypt
 
   def parse(self):
     try:
@@ -68,13 +67,27 @@ class XmlDoc:
     else:
       return False
 
-  def set_element(self, ele_tag, sub_ele_tag, sub_ele_list):
+  def set_element_list(self, ele_tag, sub_ele_tag, sub_ele_list):
     parent_ele = self.xml_root.find(ele_tag)
     if (parent_ele != None):
+      parent_text = parent_ele.tail
+      parent_tail = parent_ele.tail
       parent_ele.clear()
-      for sub_ele in sub_ele_list:
-        parent_ele.append(ET.Element(ele_tag, {"text":sub_ele}))
-      return True
+      parent_ele.text = parent_text
+      parent_ele.tail = parent_tail
+      if (len(sub_ele_list) != 0):
+        child_tail = parent_ele.tail+"  "
+        parent_ele.text += "  "
+        length = len(sub_ele_list)
+        for idx, sub_ele in enumerate(sub_ele_list):
+          temp = ET.Element(sub_ele_tag)
+          temp.text = sub_ele
+          if (idx+1 == length):
+            temp.tail = parent_ele.tail
+          else:
+            temp.tail = child_tail
+          parent_ele.append(temp)
+        return True
     else:
       return False
 

@@ -1,9 +1,13 @@
 <!-- store ebay client side tool infomation: tool id, cert and minted token(7200s update) -->
 <EBAY-CLIENT>
   <INFO>
-    <TOOL-ID>VanDungN-marketco-PRD-9dc78fcfb-e9562bf7<TOOL-ID>
-    <DEV-ID>f930b43d-4c91-4479-bb6d-171eb4472b7c<DEV-ID>
-    <TOOL-CERT>PRD-dc78fcfbb666-d7db-4299-ab91-d553<TOOL-CERT>
+    <TOOL-ID>gAAAAABgUyjVZiT-HKSDkQ7-nU7_ZQfTWcosmaJFuraNmwQUnxAXROSvL-XcvqRlSxOFAFXaBU0_GJYxHigh-otDQwfTV7ldJKdttJ8aAOYYtHkBhwWi9iSP6gHfkDr5b8R_HciXBKUQ</TOOL-ID>
+    <DEV-ID>gAAAAABgUyk39slX39aUIekaIWyLS2aEG3rJ66jCB8q7PgaInJzkK1f8MFxFOAHVNfDcUSlFjLQFEWk-lHqTBsF0Bd4kJk7glEnrHqqg-nboLEbGdg54GssUmN-3O7PwzavLu5n1qr93</DEV-ID>
+    <TOOL-CERT>gAAAAABgUylnE2njdIJheJ5bacU3PHGSLC1oFbjuo61gY42cQ--E-Oo8KCu2CTbs546cQ1yBIDXjcCu4mhN6NqaJ-mlzzwF4ZEcNBYA-ubHeg77ox3v-JPgGCb5VmTRUwRVQxstuBo7z</TOOL-CERT>
   </INFO>
+  <CLIENT-TOKEN-URL>https://api.ebay.com/identity/v1/oauth2/token</CLIENT-TOKEN-URL>
+  <CLIENT-SCOPE>https://api.ebay.com/oauth/api_scope</CLIENT-SCOPE>
+  <PRODUCT-API>https://api.ebay.com/buy/browse/v1/item/get_item_by_legacy_id?legacy_item_id=</PRODUCT-API>
+  <RETRY-NUM>5</RETRY-NUM>
   <TOKEN-MINT></TOKEN-MINT>
-<EBAY-CLIENT>
+</EBAY-CLIENT>
