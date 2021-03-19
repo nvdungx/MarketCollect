@@ -63,10 +63,12 @@ class ReportFile:
       return False
 
 class ReportApi:
-  def __init__(self, _console=None):
+  def __init__(self, _console=None, _parent=None):
+    self.parent = _parent
     self.amazon_prd_list = []
     self.ebay_prd_list = []
     self.console = _console
+    self.profit_formula = None
     self.__excel_location = None
     self.__start_row = 0
     self.__col_idx = 0
@@ -88,12 +90,13 @@ class ReportApi:
       _, self.__col[loc]["ITEM-TITLE"]  = openpyxl.utils.coordinate_to_tuple(coord["ITEM-TITLE"])
       _, self.__col[loc]["STATUS"]  = openpyxl.utils.coordinate_to_tuple(coord["STATUS"])
       _, self.__col[loc]["PRICE"]  = openpyxl.utils.coordinate_to_tuple(coord["PRICE"])
+    self.profit_formula = data_dict["PROFIT"]
     pass
 
 
   def __console_log(self, val:str):
     if (self.console != None):
-      self.console(f"[WARN][REPORT]: {val}")
+      self.console(f"[REPORT]: {val}")
 
   def set_report_file(self, file_path):
     # import report file
@@ -142,15 +145,21 @@ class ReportApi:
       return False
 
   def gen_report(self):
-    ws = self.__report_file.wb.active
-    for item in self.amazon_prd_list:
-      ws.cell(item.row_idx, self.__col["AMAZON-LOC"]["PRICE"]).value = item.price
-      ws.cell(item.row_idx, self.__col["AMAZON-LOC"]["ITEM-TITLE"]).value = item.name
-      ws.cell(item.row_idx, self.__col["AMAZON-LOC"]["STATUS"]).value = ITEM_STATUS[item.status]
-    for item in self.ebay_prd_list:
-      ws.cell(item.row_idx, self.__col["EBAY-LOC"]["PRICE"]).value = item.price
-      ws.cell(item.row_idx, self.__col["EBAY-LOC"]["ITEM-TITLE"]).value = item.name
-      ws.cell(item.row_idx, self.__col["EBAY-LOC"]["STATUS"]).value = ITEM_STATUS[item.status]
-    self.__report_file.save_wb()
-    self.__report_file.status = True
-    pass
+    try:
+      ws = self.__report_file.wb.active
+      # set profit formula self.profit_formula
+
+      for item in self.amazon_prd_list:
+        ws.cell(item.row_idx, self.__col["AMAZON-LOC"]["PRICE"]).value = item.price
+        ws.cell(item.row_idx, self.__col["AMAZON-LOC"]["ITEM-TITLE"]).value = item.name
+        ws.cell(item.row_idx, self.__col["AMAZON-LOC"]["STATUS"]).value = ITEM_STATUS[item.status]
+      for item in self.ebay_prd_list:
+        ws.cell(item.row_idx, self.__col["EBAY-LOC"]["PRICE"]).value = item.price
+        ws.cell(item.row_idx, self.__col["EBAY-LOC"]["ITEM-TITLE"]).value = item.name
+        ws.cell(item.row_idx, self.__col["EBAY-LOC"]["STATUS"]).value = ITEM_STATUS[item.status]
+      self.__report_file.save_wb()
+      self.__report_file.status = True
+      return True
+    except Exception as e:
+      self.__console_log(f"Error occur during generate report file {str(e)}")
+      return False

@@ -9,9 +9,9 @@ class AmazonModel:
   def __init__(self):
     # get match model/check type driver is match with current model
     self.driver_type = None
+    self.option = None
+    self.driver_obj = None
     # struct of landing ele(zip code)
     self.landing_ele = None
     # list of product page element(pricing)
-    self.product_pricing = None
-    self.product_title = None
-
+    self.product_ele = None

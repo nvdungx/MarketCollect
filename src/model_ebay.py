@@ -22,6 +22,7 @@ class EbayClient:
     self.id = None
     self.cert = None
     self.OAuthToken = None
+    self.retrieve_time = None
     self.devId = None
     self.reqTokenUrl = None
     self.scope = None
@@ -45,8 +46,21 @@ class EbayClient:
       self.devId = self.__decode(data_dict["INFO"]["DEV-ID"])
       if (data_dict["TOKEN-MINT"] != None):
         self.OAuthToken = self.__decode(data_dict["TOKEN-MINT"])
+      if (data_dict["RETRIEVE-TIME"] != None):
+        try:
+          self.retrieve_time = datetime.fromisoformat(data_dict["RETRIEVE-TIME"])
+          # self.retrieve_time = datetime.strptime(, '%Y-%m-%dT%H:%M:%S.%f')
+        except:
+          self.retrieve_time = None
       self.scope = data_dict["CLIENT-SCOPE"]
       self.retry_time = int(data_dict["RETRY-NUM"])
+
+  def set_element(self, tag, val, encrypt=False):
+    if (encrypt == True):
+      self.__client_config.set_element(tag, self.__encode(str(val)))
+    else:
+      self.__client_config.set_element(tag, str(val))
+    self.__client_config.save()
 
   def __encode(self, val:str):
     result = ""

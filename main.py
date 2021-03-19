@@ -50,6 +50,7 @@ import pydevd
 
 MAX_THREAD_NUM = 10
 MAX_OBJ_NUM = 3
+TOKEN_EXPIRE_TIME = 7200
 
 class MLStripper(HTMLParser):
   def __init__(self):
@@ -107,28 +108,65 @@ class MainWindow(QMainWindow):
 
     self.tool_dir = os.path.dirname(__file__)
     self.valid_execution = False
-    self.report = ReportApi()
-    self.amazon = AmazonApi()
-    self.ebay = EbayApi()
+    self.report = ReportApi(_parent=self)
+    self.amazon = AmazonApi(_parent=self)
+    self.ebay = EbayApi(_parent=self)
+    self.token_timer = QTimer(self)
+    self.token_timer.setInterval(TOKEN_EXPIRE_TIME*1000)
+    self.token_timer.setSingleShot(True)
+    self.token_timer.timeout.connect(self.__handleTokenExpire)
     self.pre_paths = {"import":"", "saveas":""}
     self.toolCfg = None
     self.email_list = []
     self.countdown_timers = []
+    self.ebay_count = 0
+    self.amaz_count = 0
+    self.ebay_completed = False
+    self.amaz_completed = False
+
+  def __handleTokenExpire(self):
+    self.ebay.token_expired = True
 
   def handleBtnClick(self):
     self.ui.btnStartStop.setEnabled(False)
     self.ui.statusbar.showMessage("Running...")
-    # get current settings data push to module ebay, amazon, report
-    # number of web object, thread -> amazon (open web driver)
-    # thread -> ebay (get oauth token)
-    # thread -> report (get product)
-    # push product to amazon, ebay
-    # get product info out-> push to report
+    # push product to amazon
+    if (self.amazon.is_valid()):
+      # set web driver selection
+      if (self.amazon.set_driver(self.subViewSelDriver.ui.comboBox.currentText())):
+        for i in range(len(self.report.amazon_prd_list)):
+          pass
+      else:
+        self.ui.plainTxtLog(f"[ERROR]: Tool missing executable file for selected driver {self.subViewSelDriver.ui.comboBox.currentText()}")
+    # push product to ebay
+    # if (self.ebay.is_valid()):
+    #   if (not self.token_timer.isActive()):
+    #     self.token_timer.start()
+    #   for i in range(len(self.report.ebay_prd_list)):
+    #     self.tPool.start(GetEbayProduct(self, i))
 
   @Slot(dict)
   def bgModuleCompleted(self, status:dict):
     # push data from Module to report
-    pass
+    if (status["job"] == "ebay-prd"):
+      self.ebay_count += 1
+      if (self.ebay_count == len(self.report.ebay_prd_list)):
+        self.ebay_completed = True
+    elif (status["job"] == "mint-token"):
+      if (status["result"] == True):
+        self.token_timer.start()
+    elif (status["job"] == "amaz-prd"):
+      if (self.amaz_count == len(self.report.amazon_prd_list)):
+        self.amaz_completed = True
+    elif (status["job" == "report"]):
+      self.ebay_completed = False
+      self.amaz_completed = False
+      self.ebay_count = 0
+      self.amaz_count = 0
+      self.ui.btnStartStop.setEnabled(True)
+    if (self.ebay_completed and self.amaz_completed):
+      self.report.profit_formula = self.subViewFormula.ui.lineEditFormula.text()
+      self.tPool.start(GenReport(self))
 
   @Slot(bool)
   def bgLoadExcelInfoCompleted(self, val:bool):
@@ -137,6 +175,7 @@ class MainWindow(QMainWindow):
       self.ui.btnStartStop.setEnabled(True)
     else:
       self.ui.statusbar.showMessage("Failed to load product information from input file")
+      self.ui.plainTxtLog.appendPlainText("[ERROR][EXCEL]: Failed to load product information from input file. Please makesure it's format is correct.")
       self.ui.btnStartStop.setEnabled(False)
 
   @Slot(bool)
@@ -309,18 +348,36 @@ class CountdownTimer:
     self.name = _name
     self.value = _value
 
+class GenReport(QRunnable):
+  def __init__(self, _parent):
+    super().__init__()
+    self.parent = _parent
+    self.signals = BackgroundSignal()
+    self.signals.console.connect(self.parent.ui.plainTxtLog.appendPlainText)
+    self.signals.bgwork.connect(self.parent.bgModuleCompleted)
+  def console_log(self, val:str):
+    self.signals.console.emit(f"{val}")
+  def run(self):
+    pydevd.settrace(suspend=False)
+    if (self.parent.report.gen_report()):
+      self.signals.bgwork.emit({"job":"report", "result":True})
+    else:
+      self.signals.bgwork.emit({"job":"report", "result":False})
+    self.console_log("---- PRODUCT PRICE REPORT FILE GENERATION COMPLETE ----")
+
 class GetAmazonProduct(QRunnable):
   def __init__(self, _parent):
     super().__init__()
     self.parent = _parent
     self.signals = BackgroundSignal()
     self.signals.console.connect(self.parent.ui.plainTxtLog.appendPlainText)
-    pass
+    self.signals.bgwork.connect(self.parent.bgModuleCompleted)
   def console_log(self, val:str):
     self.signals.console.emit(f"{val}")
   def run(self):
     pydevd.settrace(suspend=False)
-    pass
+
+    self.console_log("---- AMAZON PRODUCT PRICE COLLECT COMPLETE ----")
 
 class MintEbayToken(QRunnable):
   def __init__(self, _parent):
@@ -328,29 +385,45 @@ class MintEbayToken(QRunnable):
     self.parent = _parent
     self.signals = BackgroundSignal()
     self.signals.console.connect(self.parent.ui.plainTxtLog.appendPlainText)
+    self.signals.bgwork.connect(self.parent.bgModuleCompleted)
 
   def console_log(self, val:str):
     self.signals.console.emit(f"{val}")
   def run(self):
     pydevd.settrace(suspend=False)
     if (self.parent.ebay.get_token()):
+      self.signals.bgwork.emit({"job":"mint-token",
+                                "result": True})
       self.signals.console.emit("[EBAY]: Get client token successful")
     else:
       self.signals.console.emit("[ERROR]: Failed to get Ebay client token")
+      self.signals.bgwork.emit({"job":"mint-token",
+                                "result": False})
 
 class GetEbayProduct(QRunnable):
-  def __init__(self, _parent):
+  def __init__(self, _parent, _prd_idx):
     super().__init__()
     self.parent = _parent
     self.signals = BackgroundSignal()
     self.signals.console.connect(self.parent.ui.plainTxtLog.appendPlainText)
-    pass
+    self.signals.bgwork.connect(self.parent.bgModuleCompleted)
+    self.prd_idx = _prd_idx
+    self.parent.ebay.console = self.console_log
   def console_log(self, val:str):
     self.signals.console.emit(f"{val}")
   def run(self):
     pydevd.settrace(suspend=False)
-    pass
-
+    temp = None
+    # self.console_log(f"THREAD OF PRODUCT ID {self.prd_idx} - {QThread.currentThread()}")
+    temp = self.parent.ebay.get_price(self.parent.report.ebay_prd_list[self.prd_idx])
+    if (temp != None):
+      self.parent.report.ebay_prd_list[self.prd_idx] = temp
+      self.signals.bgwork.emit({"job":"ebay-prd",
+                                "result": True})
+    else:
+      self.signals.bgwork.emit({"job":"ebay-prd",
+                                "result": False})
+    self.console_log("---- EBAY PRODUCT PRICE COLLECT COMPLETE ----")
 
 class LoadToolConfig(QRunnable):
   def __init__(self, _parent):
@@ -396,6 +469,7 @@ class BackgroundSignal(QObject):
   console = Signal(str)
   completed = Signal(bool)
   guisetting = Signal(XmlDoc)
+  bgwork = Signal(dict)
 
 if __name__ == "__main__":
   app = QApplication(sys.argv)

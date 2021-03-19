@@ -24,7 +24,8 @@ from src.model_product import *
 #  '//*[@id="olp_feature_div"]/div/span/a[@class="a-link-normal"]/span[@class="a-size-base a-color-price"]'
 #]
 class AmazonApi:
-  def __init__(self, _console=None):
+  def __init__(self, _console=None, _parent=None):
+    self.parent = _parent
     self.cur_dir = os.path.dirname(__file__)
     # self.capa = DesiredCapabilities.CHROME
     # self.capa["pageLoadStrategy"] = "none"
@@ -38,15 +39,11 @@ class AmazonApi:
     self.number_obj = None
     pass
 
-  # def __valid_page(self, tag_list):
-  #   valid = 0
-  #   for tag in tag_list:
-  #     if (EC.presence_of_element_located((By.XPATH, tag))):
-  #       valid += 1
-  #   if (valid > 1):
-  #     return True
-  #   else:
-  #     return False
+  def is_valid(self):
+    return False
+
+  def set_driver(self, driver_name):
+
   def get_price(self, prd_list:list):
     self.driver = webdriver.Chrome(os.path.abspath(os.path.join(self.cur_dir, "../browserdriver/ChromeDriver88.0.4324.96_32b.exe")), chrome_options=self.options)
     time.sleep(2)
