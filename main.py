@@ -121,6 +121,7 @@ class MainWindow(QMainWindow):
     self.countdown_timers = []
     self.ebay_count = 0
     self.amaz_count = 0
+    self.amaz_obj_count = 0
     self.ebay_completed = False
     self.amaz_completed = False
 
@@ -131,26 +132,25 @@ class MainWindow(QMainWindow):
     self.ui.btnStartStop.setEnabled(False)
     self.ui.statusbar.showMessage("Running...")
     # self.amazon.set_driver(self.subViewSelDriver.ui.comboBox.currentText(), self.subViewToolResource.ui.sBoxDriverObjNum.value())
-    self.tPool.start(StartWebDriver(self))
-    # --push product to amazon--
-    # if (self.amazon.is_valid()):
-    #   # set web driver selection
-    #   if (self.amazon.set_driver(self.subViewSelDriver.ui.comboBox.currentText())):
-    #     for i in range(len(self.report.amazon_prd_list)):
-    #       pass
-    #   else:
-    #     self.ui.plainTxtLog(f"[ERROR]: Tool missing executable file for selected driver {self.subViewSelDriver.ui.comboBox.currentText()}")
+    self.amazon.clean_driver()
+    self.amaz_obj_count = 0
+    for _ in range(self.subViewToolResource.ui.sBoxDriverObjNum.value()):
+      self.tPool.start(StartWebDriver(self))
     # --push product to ebay--
-    # if (self.ebay.is_valid()):
-    #   if (not self.token_timer.isActive()):
-    #     self.token_timer.start()
-    #   for i in range(len(self.report.ebay_prd_list)):
-    #     self.tPool.start(GetEbayProduct(self, i))
+    if (self.ebay.is_valid()):
+      if (not self.token_timer.isActive()):
+        self.token_timer.start()
+      for i in range(len(self.report.ebay_prd_list)):
+        self.tPool.start(GetEbayProduct(self, i))
 
   @Slot(dict)
   def bgModuleCompleted(self, status:dict):
     # push data from Module to report
-    if (status["job"] == "ebay-prd"):
+    if (status["job"] == "amaz-landing"):
+      self.amaz_obj_count += 1
+      if (self.amaz_obj_count == self.subViewToolResource.ui.sBoxDriverObjNum.value()):
+        self.amazon.is_valid()
+    elif (status["job"] == "ebay-prd"):
       self.ebay_count += 1
       if (self.ebay_count == len(self.report.ebay_prd_list)):
         self.ebay_completed = True
@@ -392,7 +392,7 @@ class StartWebDriver(QRunnable):
     self.signals.console.emit(f"{val}")
   def run(self):
     pydevd.settrace(suspend=False)
-    if (self.parent.amazon.set_driver(self.parent.subViewSelDriver.ui.comboBox.currentText(), self.parent.subViewToolResource.ui.sBoxDriverObjNum.value())):
+    if (self.parent.amazon.set_driver(self.parent.subViewSelDriver.ui.comboBox.currentText())):
       self.signals.bgwork.emit({"job":"amaz-landing",
                                     "result": True})
       self.signals.console.emit("[AMAZON]: Landing page successfull")

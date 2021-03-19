@@ -25,45 +25,29 @@ class AmazonApi:
     self.console = _console
     self.number_obj = None
     self.web_obj = [] # AmazonModel object
-
   def is_valid(self):
-    # condition?
-    return True
+    result = True
+    for wo in self.web_obj:
+      result &= wo.valid_page
+    return result
 
   def __console_log(self, val):
     if (self.console != None):
       self.console(str(val))
 
-  def set_driver(self, driver_type, number):
+  def clean_driver(self):
     current_obj = len(self.web_obj)
-    if (current_obj == 0):
-      for _ in range(number):
-        self.web_obj.append(AmazonModel(driver_type, self.console))
-    else:
-      if (self.web_obj[0].driver_type != driver_type):
-        for _ in range(current_obj):
-          try:
-            self.web_obj[-1].driver.quit()
-          except Exception as e:
-            self.__console_log(f"[ERROR][AMAZON]: Web driver fail to close {str(e)}")
-        self.web_obj.clear()
-        for _ in range(number):
-          self.web_obj.append(AmazonModel(driver_type, self.console))
-      else:
-        if (current_obj < number):
-          for _ in range(number-current_obj):
-            self.web_obj.append(AmazonModel(driver_type, self.console))
-        elif (current_obj > number):
-          for _ in range(current_obj-number):
-            try:
-              self.web_obj[-1].driver.quit()
-            except Exception as e:
-              self.__console_log(f"[ERROR][AMAZON]: Web driver fail to close {str(e)}")
-            self.web_obj.pop()
-    result = True
-    for wo in self.web_obj:
-      result &= wo.valid_page
-    return result
+    if (current_obj != 0):
+      for _ in range(current_obj):
+        try:
+          self.web_obj[-1].driver.quit()
+        except Exception as e:
+          self.__console_log(f"[ERROR][AMAZON]: Web driver fail to close {str(e)}")
+      self.web_obj.clear()
+
+  def set_driver(self, driver_type):
+    self.web_obj.append(AmazonModel(driver_type, self.console))
+    return self.web_obj[-1].valid_page
 
   # list of web object << with queue << product push to each queue in round robin
   def get_price(self, prd_list:list):
