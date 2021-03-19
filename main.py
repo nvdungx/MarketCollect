@@ -130,15 +130,17 @@ class MainWindow(QMainWindow):
   def handleBtnClick(self):
     self.ui.btnStartStop.setEnabled(False)
     self.ui.statusbar.showMessage("Running...")
-    # push product to amazon
-    if (self.amazon.is_valid()):
-      # set web driver selection
-      if (self.amazon.set_driver(self.subViewSelDriver.ui.comboBox.currentText())):
-        for i in range(len(self.report.amazon_prd_list)):
-          pass
-      else:
-        self.ui.plainTxtLog(f"[ERROR]: Tool missing executable file for selected driver {self.subViewSelDriver.ui.comboBox.currentText()}")
-    # push product to ebay
+    # self.amazon.set_driver(self.subViewSelDriver.ui.comboBox.currentText(), self.subViewToolResource.ui.sBoxDriverObjNum.value())
+    self.tPool.start(StartWebDriver(self))
+    # --push product to amazon--
+    # if (self.amazon.is_valid()):
+    #   # set web driver selection
+    #   if (self.amazon.set_driver(self.subViewSelDriver.ui.comboBox.currentText())):
+    #     for i in range(len(self.report.amazon_prd_list)):
+    #       pass
+    #   else:
+    #     self.ui.plainTxtLog(f"[ERROR]: Tool missing executable file for selected driver {self.subViewSelDriver.ui.comboBox.currentText()}")
+    # --push product to ebay--
     # if (self.ebay.is_valid()):
     #   if (not self.token_timer.isActive()):
     #     self.token_timer.start()
@@ -182,7 +184,7 @@ class MainWindow(QMainWindow):
   def bgLoadToolCompleted(self, val:bool):
     if (val == True):
       self.ui.statusbar.showMessage("Load tool settings completed")
-      self.tPool.start(MintEbayToken(self))
+      # self.tPool.start(MintEbayToken(self))
     else:
       self.ui.statusbar.showMessage("Failed to load tool settings")
 
@@ -378,6 +380,26 @@ class GetAmazonProduct(QRunnable):
     pydevd.settrace(suspend=False)
 
     self.console_log("---- AMAZON PRODUCT PRICE COLLECT COMPLETE ----")
+
+class StartWebDriver(QRunnable):
+  def __init__(self, _parent):
+    super().__init__()
+    self.parent = _parent
+    self.signals = BackgroundSignal()
+    self.signals.bgwork.connect(self.parent.bgModuleCompleted)
+    self.signals.console.connect(self.parent.ui.plainTxtLog.appendPlainText)
+  def console_log(self, val:str):
+    self.signals.console.emit(f"{val}")
+  def run(self):
+    pydevd.settrace(suspend=False)
+    if (self.parent.amazon.set_driver(self.parent.subViewSelDriver.ui.comboBox.currentText(), self.parent.subViewToolResource.ui.sBoxDriverObjNum.value())):
+      self.signals.bgwork.emit({"job":"amaz-landing",
+                                    "result": True})
+      self.signals.console.emit("[AMAZON]: Landing page successfull")
+    else:
+      self.signals.bgwork.emit({"job":"amaz-landing",
+                                    "result": False})
+      self.signals.console.emit("[AMAZON]: Landing page failed")
 
 class MintEbayToken(QRunnable):
   def __init__(self, _parent):

@@ -12,7 +12,7 @@
       "console": "integratedTerminal",
       "cwd": "${fileDirname}",
       "args":
-      [".\\Check-Price-AMZ-EBAY.xlsx"]
+      []
     }
   ]
 }

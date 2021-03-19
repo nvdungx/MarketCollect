@@ -1,5 +1,6 @@
 <!-- location of html tag element(xpath) in amazon.com site -->
 <AMAZON>
+  <PAGE>http://amazon.com</PAGE>
   <!-- GOOGLE CHROME WEB BROWSER -->
   <GOOGLE-PAGE>
     <LANDING>
@@ -50,7 +51,6 @@
       <LOC-ADDR>//*[@id="glow-ingress-line2"]</LOC-ADDR>
     </LANDING>
     <PRODUCT>
-    <PRODUCT>
       <TITLE>//*/span[@id="productTitle"]</TITLE>
       <CASE1>
         <PRICE-BLOCK>//*/span[@id="priceblock_ourprice"]</PRICE-BLOCK>
@@ -72,7 +72,6 @@
         <PRICE-BLOCK>//*[@id="olp_feature_div"]/div[@class="a-section a-spacing-small a-spacing-top-small"]/span/a[@class="a-link-normal"]/span[@class="a-size-base a-color-price"]</PRICE-BLOCK>
       </CASE5>
     </PRODUCT>
-    </PRODUCT>
   </EDGE-PAGE>
   <!-- FIRE WEB BROWSER -->
   <FIREFOX-PAGE>
@@ -86,7 +85,6 @@
       <DONE-BTN>//*/div[@class="a-popover-wrapper"]/div[@class="a-popover-footer"]/span/span/span/button</DONE-BTN>
       <CONTINUE-BTN>//*[@id="GLUXConfirmClose"]</CONTINUE-BTN>
     </LANDING>
-    <PRODUCT>
     <PRODUCT>
       <TITLE>//*/span[@id="productTitle"]</TITLE>
       <CASE1>
@@ -108,7 +106,6 @@
         <!-- //*[@id="olp_feature_div"]/div[2]/span/a/span[2] -->
         <PRICE-BLOCK>//*[@id="olp_feature_div"]/div[@class="a-section a-spacing-small a-spacing-top-small"]/span/a[@class="a-link-normal"]/span[@class="a-size-base a-color-price"]</PRICE-BLOCK>
       </CASE5>
-    </PRODUCT>
     </PRODUCT>
   </FIREFOX-PAGE>
 </AMAZON>

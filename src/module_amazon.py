@@ -15,40 +15,58 @@ from selenium.webdriver.support.ui import WebDriverWait as wait
 #from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from src.model_product import *
+from src.model_amazon import *
+from src.module_xml import *
 
-#LIST_TAG = [
-#  '//*/span[@id="productTitle"]',
-#  '//*/span[@id="priceblock_ourprice"]',
-#  '//*/span[@id="priceblock_saleprice"]',
-#  '//*[@id="availability"]/span',
-#  '//*[@id="olp_feature_div"]/div/span/a[@class="a-link-normal"]/span[@class="a-size-base a-color-price"]'
-#]
 class AmazonApi:
   def __init__(self, _console=None, _parent=None):
     self.parent = _parent
     self.cur_dir = os.path.dirname(__file__)
-    # self.capa = DesiredCapabilities.CHROME
-    # self.capa["pageLoadStrategy"] = "none"
-    self.options = webdriver.ChromeOptions()
-    self.options.add_argument("--ignore-certificate-errors")
-    self.options.add_argument("--incognito")
-    # self.options.add_argument("--headless")
-    # self.options.add_argument("--disable-notifications")
-    self.driver = None
     self.console = _console
     self.number_obj = None
-    pass
+    self.web_obj = [] # AmazonModel object
 
   def is_valid(self):
-    return False
+    # condition?
+    return True
 
-  def set_driver(self, driver_name):
+  def __console_log(self, val):
+    if (self.console != None):
+      self.console(str(val))
 
+  def set_driver(self, driver_type, number):
+    current_obj = len(self.web_obj)
+    if (current_obj == 0):
+      for _ in range(number):
+        self.web_obj.append(AmazonModel(driver_type, self.console))
+    else:
+      if (self.web_obj[0].driver_type != driver_type):
+        for _ in range(current_obj):
+          try:
+            self.web_obj[-1].driver.quit()
+          except Exception as e:
+            self.__console_log(f"[ERROR][AMAZON]: Web driver fail to close {str(e)}")
+        self.web_obj.clear()
+        for _ in range(number):
+          self.web_obj.append(AmazonModel(driver_type, self.console))
+      else:
+        if (current_obj < number):
+          for _ in range(number-current_obj):
+            self.web_obj.append(AmazonModel(driver_type, self.console))
+        elif (current_obj > number):
+          for _ in range(current_obj-number):
+            try:
+              self.web_obj[-1].driver.quit()
+            except Exception as e:
+              self.__console_log(f"[ERROR][AMAZON]: Web driver fail to close {str(e)}")
+            self.web_obj.pop()
+    result = True
+    for wo in self.web_obj:
+      result &= wo.valid_page
+    return result
+
+  # list of web object << with queue << product push to each queue in round robin
   def get_price(self, prd_list:list):
-    self.driver = webdriver.Chrome(os.path.abspath(os.path.join(self.cur_dir, "../browserdriver/ChromeDriver88.0.4324.96_32b.exe")), chrome_options=self.options)
-    time.sleep(2)
-    self.driver.get("https://amazon.com")
-    time.sleep(1)
     # find zipcode element
     if(not self.__act_click_element('//*[@id="nav-global-location-popover-link"]')):
       raise Exception("WEB_DRIVER", "Failed to find amazon html element {0}".format("zip-code-button"))

@@ -218,7 +218,7 @@ class DialogToolResource(QDialog):
     self.parent.toolCfg.set_element(".//THREAD-NUM", self.ui.sBoxThreadNum.text())
     self.parent.toolCfg.set_element(".//OBJECT-NUM", self.ui.sBoxDriverObjNum.text())
     self.parent.toolCfg.save()
-    self.parent.tPool.setMaxThreadCount(self.self.ui.sBoxThreadNum.value())
+    self.parent.tPool.setMaxThreadCount(self.ui.sBoxThreadNum.value())
     super().accept()
 
   def reject(self):

@@ -17,6 +17,9 @@ from src.module_xml import *
 # get the access token
 # api request with access token (expire after 7200s)
 
+# TODO: handle clientID reach maximum number of request per day
+#       >> need to request other clientID and cert from server
+#       >> module back_end for user licensing/update/ebay-client info
 class EbayApi:
   def __init__(self, _console=None, _parent=None):
     self.parent = _parent
@@ -75,6 +78,8 @@ class EbayApi:
               product.status = ItemStatus.OUT_STOCK
             self.console_log(f"[EBAY]: Item {product.row_idx} id {item_id} - DONE {product.price}{product.currency}")
             break
+          else:
+            self.console_log(f"[WARNING][EBAY]: Item Item {product.row_idx} id {item_id} - request failed {r.json()}")
         except Exception as e:
           self.console_log(f"[ERROR][EBAY]: Item {product.row_idx} id {item_id} - {str(e)}")
       else:
