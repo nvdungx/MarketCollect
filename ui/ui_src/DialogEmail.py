@@ -109,3 +109,5 @@ class Ui_DialogEmail(object):
         self.btnAdd.setText(QCoreApplication.translate("DialogEmail", u"Add", None))
         self.btnRemove.setText(QCoreApplication.translate("DialogEmail", u"Remove", None))
     # retranslateUi
+
+

@@ -1,1 +1,32 @@
-<!-- record tool setting data configure by user -->
+<TOOL>
+  <FILE>
+    <IMPORT-LOC>C:/Users/Admin/Documents/Workspace/01.Projects/MarketCollect/data</IMPORT-LOC>
+    <SAVE-AS />
+    <TEMP-PREV />
+  </FILE>
+  <SETTINGS>
+    <TIMER-LIST>
+      <TIMER>00:20:01</TIMER>
+      <TIMER>01:00:11</TIMER>
+      <TIMER>00:59:21</TIMER>
+      <TIMER>00:00:00</TIMER>
+    </TIMER-LIST>
+    <EMAIL-LIST>
+      <EMAIL>nvdung694@gmail.com</EMAIL>
+      <EMAIL>sample@gmail.com</EMAIL>
+      <EMAIL>sample@gmail.com</EMAIL>
+      <EMAIL>sample@gmail.com</EMAIL>
+      <EMAIL>sample@gmail.com</EMAIL>
+    </EMAIL-LIST>
+    <TOOL-RESOURCE>
+      <THREAD-NUM>8</THREAD-NUM>
+      <OBJECT-NUM>3</OBJECT-NUM>
+    </TOOL-RESOURCE>
+    <SELECTED-DRIVER>MicrosoftEdge89.0.774.54_64b</SELECTED-DRIVER>
+    <FORMULA>=A2+B2+AC1</FORMULA>
+  </SETTINGS>
+  <HELP>
+    <UPDATE-URL>www.sample.con/api/v1/update</UPDATE-URL>
+    <LICENSE-URL>www.sample.con/api/v1/license</LICENSE-URL>
+  </HELP>
+</TOOL>

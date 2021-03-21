@@ -69,6 +69,7 @@ class ReportApi:
     self.ebay_prd_list = []
     self.console = _console
     self.profit_formula = None
+    self.profit_col = None
     self.__excel_location = None
     self.__start_row = 0
     self.__col_idx = 0
@@ -90,7 +91,7 @@ class ReportApi:
       _, self.__col[loc]["ITEM-TITLE"]  = openpyxl.utils.coordinate_to_tuple(coord["ITEM-TITLE"])
       _, self.__col[loc]["STATUS"]  = openpyxl.utils.coordinate_to_tuple(coord["STATUS"])
       _, self.__col[loc]["PRICE"]  = openpyxl.utils.coordinate_to_tuple(coord["PRICE"])
-    self.profit_formula = data_dict["PROFIT"]
+    _, self.profit_col = openpyxl.utils.coordinate_to_tuple(data_dict["PROFIT"])
     pass
 
 
@@ -148,11 +149,11 @@ class ReportApi:
     try:
       ws = self.__report_file.wb.active
       # set profit formula self.profit_formula
-
       for item in self.amazon_prd_list:
         ws.cell(item.row_idx, self.__col["AMAZON-LOC"]["PRICE"]).value = item.price
         ws.cell(item.row_idx, self.__col["AMAZON-LOC"]["ITEM-TITLE"]).value = item.name
         ws.cell(item.row_idx, self.__col["AMAZON-LOC"]["STATUS"]).value = ITEM_STATUS[item.status]
+        ws.cell(item.row_idx, self.profit_col).value = str(self.profit_formula)
       for item in self.ebay_prd_list:
         ws.cell(item.row_idx, self.__col["EBAY-LOC"]["PRICE"]).value = item.price
         ws.cell(item.row_idx, self.__col["EBAY-LOC"]["ITEM-TITLE"]).value = item.name

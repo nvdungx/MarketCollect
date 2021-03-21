@@ -1,6 +1,6 @@
 <TOOL>
   <FILE>
-    <IMPORT-LOC>C:/Workspaces/MarketCollect/data</IMPORT-LOC>
+    <IMPORT-LOC>C:/Users/Admin/Documents/Workspace/01.Projects/MarketCollect/data</IMPORT-LOC>
     <SAVE-AS />
     <TEMP-PREV />
   </FILE>
@@ -20,7 +20,7 @@
       <THREAD-NUM>8</THREAD-NUM>
       <OBJECT-NUM>3</OBJECT-NUM>
     </TOOL-RESOURCE>
-    <SELECTED-DRIVER>ChromeDriver88.0.4324.96_32b</SELECTED-DRIVER>
+    <SELECTED-DRIVER>MicrosoftEdge89.0.774.54_64b</SELECTED-DRIVER>
     <FORMULA>=A2+B2+AC1</FORMULA>
   </SETTINGS>
   <HELP>

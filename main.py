@@ -46,7 +46,7 @@ from src.module_ebay import *
 from src.module_report import *
 from src.module_xml import *
 
-import pydevd
+# import pydevd
 
 MAX_THREAD_NUM = 10
 MAX_OBJ_NUM = 3
@@ -124,6 +124,7 @@ class MainWindow(QMainWindow):
     self.amaz_obj_count = 0
     self.ebay_completed = False
     self.amaz_completed = False
+    self.retry_time = 3
 
   def __handleTokenExpire(self):
     self.ebay.token_expired = True
@@ -131,12 +132,30 @@ class MainWindow(QMainWindow):
   def handleBtnClick(self):
     self.ui.btnStartStop.setEnabled(False)
     self.ui.statusbar.showMessage("Running...")
-    # self.amazon.set_driver(self.subViewSelDriver.ui.comboBox.currentText(), self.subViewToolResource.ui.sBoxDriverObjNum.value())
-    self.amazon.clean_driver()
+    current_obj_available = len(self.amazon.web_obj)
+    new_obj_create = 0
     self.amaz_obj_count = 0
-    for _ in range(self.subViewToolResource.ui.sBoxDriverObjNum.value()):
+    self.retry_time = 3
+    if (current_obj_available != 0):
+      # clean all driver object
+      if(self.amazon.web_obj[0].driver_type != self.subViewSelDriver.ui.comboBox.currentText()):
+        self.amazon.clean_driver()
+      else:
+        # if config value > current available
+        if (self.subViewToolResource.ui.sBoxDriverObjNum.value() > current_obj_available):
+          # create new
+          new_obj_create = self.subViewToolResource.ui.sBoxDriverObjNum.value()-current_obj_available
+        else:
+          # clean and retain num
+          self.amazon.clean_driver(self.subViewToolResource.ui.sBoxDriverObjNum.value())
+    else:
+      new_obj_create = self.subViewToolResource.ui.sBoxDriverObjNum.value()
+    for _ in range(new_obj_create):
       self.tPool.start(StartWebDriver(self))
+    for obj in self.amazon.web_obj:
+      self.tPool.start(LoadLandingPage(self, obj))
     # --push product to ebay--
+    self.ui.plainTxtLog.appendPlainText("[EBAY]: START COLLECT PRODUCT PRICE")
     if (self.ebay.is_valid()):
       if (not self.token_timer.isActive()):
         self.token_timer.start()
@@ -149,18 +168,36 @@ class MainWindow(QMainWindow):
     if (status["job"] == "amaz-landing"):
       self.amaz_obj_count += 1
       if (self.amaz_obj_count == self.subViewToolResource.ui.sBoxDriverObjNum.value()):
-        self.amazon.is_valid()
+        # check if all web object is at landing page and has correct zip code
+        if(self.amazon.is_valid()):
+          # push product to amazon web object
+          # start web object to collect info
+          self.ui.plainTxtLog.appendPlainText("[AMAZON]: START COLLECT PRODUCT PRICE")
+          self.amazon.push_product(self.report.amazon_prd_list)
+          for obj in self.amazon.web_obj:
+            self.tPool.start(GetAmazonProduct(self, obj))
+        else:
+          if (self.retry_time != 0):
+            self.retry_time -= 1
+            # try to get web object to valid state
+            self.amazon.remove_driver()
+            self.amaz_obj_count = len(self.amazon.web_obj)
+            for _ in range(self.subViewToolResource.ui.sBoxDriverObjNum.value()-self.amaz_obj_count):
+              self.tPool.start(StartWebDriver(self))
     elif (status["job"] == "ebay-prd"):
       self.ebay_count += 1
       if (self.ebay_count == len(self.report.ebay_prd_list)):
         self.ebay_completed = True
+        self.ui.plainTxtLog.appendPlainText("---- EBAY PRODUCT PRICE COLLECT COMPLETE ----")
     elif (status["job"] == "mint-token"):
       if (status["result"] == True):
         self.token_timer.start()
     elif (status["job"] == "amaz-prd"):
-      if (self.amaz_count == len(self.report.amazon_prd_list)):
+      self.amaz_count += 1
+      if (self.amaz_count == len(self.amazon.web_obj)):
+        self.ui.plainTxtLog.appendPlainText("---- AMAZON PRODUCT PRICE COLLECT COMPLETE ----")
         self.amaz_completed = True
-    elif (status["job" == "report"]):
+    elif (status["job"] == "report"):
       self.ebay_completed = False
       self.amaz_completed = False
       self.ebay_count = 0
@@ -350,6 +387,7 @@ class CountdownTimer:
     self.name = _name
     self.value = _value
 
+# gen report from list of product
 class GenReport(QRunnable):
   def __init__(self, _parent):
     super().__init__()
@@ -360,27 +398,38 @@ class GenReport(QRunnable):
   def console_log(self, val:str):
     self.signals.console.emit(f"{val}")
   def run(self):
-    pydevd.settrace(suspend=False)
+    # pydevd.settrace(suspend=False)
     if (self.parent.report.gen_report()):
       self.signals.bgwork.emit({"job":"report", "result":True})
     else:
       self.signals.bgwork.emit({"job":"report", "result":False})
     self.console_log("---- PRODUCT PRICE REPORT FILE GENERATION COMPLETE ----")
 
+#
 class GetAmazonProduct(QRunnable):
-  def __init__(self, _parent):
+  def __init__(self, _parent, _web_obj):
     super().__init__()
     self.parent = _parent
     self.signals = BackgroundSignal()
     self.signals.console.connect(self.parent.ui.plainTxtLog.appendPlainText)
     self.signals.bgwork.connect(self.parent.bgModuleCompleted)
+    self.web_obj = _web_obj
   def console_log(self, val:str):
     self.signals.console.emit(f"{val}")
   def run(self):
-    pydevd.settrace(suspend=False)
+    # pydevd.settrace(suspend=False)
+    self.web_obj.console = self.console_log
+    if (self.web_obj.get_product_price()):
+      self.signals.bgwork.emit({"job":"amaz-prd",
+                                "result": True})
+    else:
+      self.signals.bgwork.emit({"job":"amaz-prd",
+                                "result": False})
+    self.web_obj.console = None
 
-    self.console_log("---- AMAZON PRODUCT PRICE COLLECT COMPLETE ----")
 
+# start a web driver object in background, append it to amazon web object list
+# web driver connect to amazon and set location to zipcode value
 class StartWebDriver(QRunnable):
   def __init__(self, _parent):
     super().__init__()
@@ -391,16 +440,47 @@ class StartWebDriver(QRunnable):
   def console_log(self, val:str):
     self.signals.console.emit(f"{val}")
   def run(self):
-    pydevd.settrace(suspend=False)
+    # pydevd.settrace(suspend=False)
+    self.parent.amazon.console = self.console_log
     if (self.parent.amazon.set_driver(self.parent.subViewSelDriver.ui.comboBox.currentText())):
       self.signals.bgwork.emit({"job":"amaz-landing",
                                     "result": True})
       self.signals.console.emit("[AMAZON]: Landing page successfull")
+      self.parent.amazon.console = None
     else:
       self.signals.bgwork.emit({"job":"amaz-landing",
                                     "result": False})
       self.signals.console.emit("[AMAZON]: Landing page failed")
+      self.parent.amazon.console = None
 
+class LoadLandingPage(QRunnable):
+  def __init__(self, _parent, _object):
+    super().__init__()
+    self.parent = _parent
+    self.signals = BackgroundSignal()
+    self.signals.bgwork.connect(self.parent.bgModuleCompleted)
+    self.signals.console.connect(self.parent.ui.plainTxtLog.appendPlainText)
+    self.obj = _object
+  def console_log(self, val:str):
+    self.signals.console.emit(f"{val}")
+  def run(self):
+    # pydevd.settrace(suspend=False)
+    self.parent.amazon.console = self.console_log
+    if (self.parent.amazon.load_landing_page(self.obj)):
+      self.signals.bgwork.emit({"job":"amaz-landing",
+                                    "result": True})
+      self.signals.console.emit("[AMAZON]: Landing page successfull")
+      self.parent.amazon.console = None
+    else:
+      self.signals.bgwork.emit({"job":"amaz-landing",
+                                    "result": False})
+      self.signals.console.emit("[AMAZON]: Landing page failed")
+      self.parent.amazon.console = None
+
+
+# get ebay client token from clientID and cert from ebay_client_config.xml
+# when the clientID out of request perday > need to update to new clientID
+# TODO: server clientID update
 class MintEbayToken(QRunnable):
   def __init__(self, _parent):
     super().__init__()
@@ -408,11 +488,10 @@ class MintEbayToken(QRunnable):
     self.signals = BackgroundSignal()
     self.signals.console.connect(self.parent.ui.plainTxtLog.appendPlainText)
     self.signals.bgwork.connect(self.parent.bgModuleCompleted)
-
   def console_log(self, val:str):
     self.signals.console.emit(f"{val}")
   def run(self):
-    pydevd.settrace(suspend=False)
+    # pydevd.settrace(suspend=False)
     if (self.parent.ebay.get_token()):
       self.signals.bgwork.emit({"job":"mint-token",
                                 "result": True})
@@ -422,6 +501,7 @@ class MintEbayToken(QRunnable):
       self.signals.bgwork.emit({"job":"mint-token",
                                 "result": False})
 
+# get ebay product price(input index of product in product list)
 class GetEbayProduct(QRunnable):
   def __init__(self, _parent, _prd_idx):
     super().__init__()
@@ -434,7 +514,7 @@ class GetEbayProduct(QRunnable):
   def console_log(self, val:str):
     self.signals.console.emit(f"{val}")
   def run(self):
-    pydevd.settrace(suspend=False)
+    # pydevd.settrace(suspend=False)
     temp = None
     # self.console_log(f"THREAD OF PRODUCT ID {self.prd_idx} - {QThread.currentThread()}")
     temp = self.parent.ebay.get_price(self.parent.report.ebay_prd_list[self.prd_idx])
@@ -445,8 +525,8 @@ class GetEbayProduct(QRunnable):
     else:
       self.signals.bgwork.emit({"job":"ebay-prd",
                                 "result": False})
-    self.console_log("---- EBAY PRODUCT PRICE COLLECT COMPLETE ----")
 
+# load tool configuration during init
 class LoadToolConfig(QRunnable):
   def __init__(self, _parent):
     super().__init__()
@@ -458,7 +538,7 @@ class LoadToolConfig(QRunnable):
   def console_log(self, val:str):
     self.signals.console.emit(f"{val}")
   def run(self):
-    pydevd.settrace(suspend=False)
+    # pydevd.settrace(suspend=False)
     toolCfg = XmlDoc("user_tool_setting.xml", _console=self.console_log)
     if (toolCfg.parse()):
       # return data to GUI UI
@@ -468,6 +548,7 @@ class LoadToolConfig(QRunnable):
       self.signals.guisetting.emit(None)
       self.signals.completed.emit(False)
 
+# load exceel and get product link info
 class LoadExcelInfo(QRunnable):
   def __init__(self, _parent):
     super().__init__()
@@ -478,7 +559,7 @@ class LoadExcelInfo(QRunnable):
   def console_log(self, val:str):
     self.signals.console.emit(f"{val}")
   def run(self):
-    pydevd.settrace(suspend=False)
+    # pydevd.settrace(suspend=False)
     self.parent.report.console = self.console_log
     if (self.parent.report.get_prd_link()):
       self.signals.completed.emit(True)

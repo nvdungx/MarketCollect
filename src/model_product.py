@@ -24,6 +24,8 @@ class Product:
   currency:str
   status:ItemStatus
   multi_vendor:bool
+  row_idx:int
+  item_num:int
   def __init__(self, _item_num=1, _link="", _name="", _price=0, _cur="", _status=ItemStatus.NONE, _mul=False, _row_idx=1):
     # product link
     self.link = _link

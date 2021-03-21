@@ -1,17 +1,19 @@
 <!-- location of html tag element(xpath) in amazon.com site -->
 <AMAZON>
   <PAGE>http://amazon.com</PAGE>
+  <LOAD-TIMEOUT>7</LOAD-TIMEOUT>
   <!-- GOOGLE CHROME WEB BROWSER -->
   <GOOGLE-PAGE>
     <LANDING>
       <ZIP-CODE-VAL>97124</ZIP-CODE-VAL>
       <ZIP-CODE-BTN>//*[@id="nav-global-location-popover-link"]</ZIP-CODE-BTN>
       <INPUT-BOX>//*[@id="GLUXZipUpdateInput"]</INPUT-BOX>
-      <APLLY-BTN>//*[@id="GLUXZipUpdate"]/span/input</APLLY-BTN>
+      <APPLY-BTN>//*[@id="GLUXZipUpdate"]</APPLY-BTN>
       <!-- Please enter a valid US zip code -->
       <ERROR-RETRY>//*[@id="GLUXZipError"]/div/div/div</ERROR-RETRY>
       <DONE-BTN>//*/div[@class="a-popover-wrapper"]/div[@class="a-popover-footer"]/span/span/span/button</DONE-BTN>
-      <CONTINUE-BTN>//*[@id="GLUXConfirmClose"]</CONTINUE-BTN>
+      <CONTINUE-BTN>//*/div[@class="a-popover-wrapper"]/div[@class="a-popover-footer"]/span/span</CONTINUE-BTN>
+      <WAIT-ZIPCODE-CHANGE>2</WAIT-ZIPCODE-CHANGE>
       <LOC-ADDR>//*[@id="glow-ingress-line2"]</LOC-ADDR>
     </LANDING>
     <PRODUCT>
@@ -43,11 +45,12 @@
       <ZIP-CODE-VAL>97124</ZIP-CODE-VAL>
       <ZIP-CODE-BTN>//*[@id="nav-global-location-popover-link"]</ZIP-CODE-BTN>
       <INPUT-BOX>//*[@id="GLUXZipUpdateInput"]</INPUT-BOX>
-      <APLLY-BTN>//*[@id="GLUXZipUpdate"]/span/input</APLLY-BTN>
+      <APPLY-BTN>//*[@id="GLUXZipUpdate"]</APPLY-BTN>
       <!-- Please enter a valid US zip code -->
       <ERROR-RETRY>//*[@id="GLUXZipError"]/div/div/div</ERROR-RETRY>
-      <DONE-BTN>//*/div[@class="a-popover-wrapper"]/div[@class="a-popover-footer"]/span/span/span/button</DONE-BTN>
-      <CONTINUE-BTN>//*[@id="GLUXConfirmClose"]</CONTINUE-BTN>
+      <DONE-BTN>//*/div[@class="a-popover-wrapper"]/div[@class="a-popover-footer"]/span/span</DONE-BTN>
+      <CONTINUE-BTN>//*/div[@class="a-popover-wrapper"]/div[@class="a-popover-footer"]/span/span</CONTINUE-BTN>
+      <WAIT-ZIPCODE-CHANGE>2</WAIT-ZIPCODE-CHANGE>
       <LOC-ADDR>//*[@id="glow-ingress-line2"]</LOC-ADDR>
     </LANDING>
     <PRODUCT>
@@ -79,11 +82,13 @@
       <ZIP-CODE-VAL>97124</ZIP-CODE-VAL>
       <ZIP-CODE-BTN>//*[@id="nav-global-location-popover-link"]</ZIP-CODE-BTN>
       <INPUT-BOX>//*[@id="GLUXZipUpdateInput"]</INPUT-BOX>
-      <APLLY-BTN>//*[@id="GLUXZipUpdate"]/span/input</APLLY-BTN>
+      <APPLY-BTN>//*[@id="GLUXZipUpdate"]</APPLY-BTN>
       <!-- Please enter a valid US zip code -->
       <ERROR-RETRY>//*[@id="GLUXZipError"]/div/div/div</ERROR-RETRY>
-      <DONE-BTN>//*/div[@class="a-popover-wrapper"]/div[@class="a-popover-footer"]/span/span/span/button</DONE-BTN>
-      <CONTINUE-BTN>//*[@id="GLUXConfirmClose"]</CONTINUE-BTN>
+      <DONE-BTN>//*/div[@class="a-popover-wrapper"]/div[@class="a-popover-footer"]/span/span</DONE-BTN>
+      <CONTINUE-BTN>//*/div[@class="a-popover-wrapper"]/div[@class="a-popover-footer"]/span/span</CONTINUE-BTN>
+      <WAIT-ZIPCODE-CHANGE>1.5</WAIT-ZIPCODE-CHANGE>
+      <LOC-ADDR>//*[@id="glow-ingress-line2"]</LOC-ADDR>
     </LANDING>
     <PRODUCT>
       <TITLE>//*/span[@id="productTitle"]</TITLE>

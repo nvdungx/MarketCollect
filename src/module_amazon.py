@@ -23,7 +23,6 @@ class AmazonApi:
     self.parent = _parent
     self.cur_dir = os.path.dirname(__file__)
     self.console = _console
-    self.number_obj = None
     self.web_obj = [] # AmazonModel object
   def is_valid(self):
     result = True
@@ -35,143 +34,41 @@ class AmazonApi:
     if (self.console != None):
       self.console(str(val))
 
-  def clean_driver(self):
-    current_obj = len(self.web_obj)
-    if (current_obj != 0):
-      for _ in range(current_obj):
+  def remove_driver(self):
+    rm_list = []
+    for _obj in self.web_obj:
+      if (_obj.valid_page == False):
+        _obj.driver.quit()
+        rm_list.append(_obj)
+    for item in rm_list:
+      self.web_obj.remove(item)
+  def clean_driver(self, retain_val=None):
+    if (retain_val == None):
+      num_remove = len(self.web_obj)
+    else:
+      num_remove = len(self.web_obj) - retain_val
+    if (num_remove != 0):
+      for _ in range(num_remove):
         try:
           self.web_obj[-1].driver.quit()
         except Exception as e:
           self.__console_log(f"[ERROR][AMAZON]: Web driver fail to close {str(e)}")
-      self.web_obj.clear()
+        self.web_obj.pop()
 
   def set_driver(self, driver_type):
     self.web_obj.append(AmazonModel(driver_type, self.console))
     return self.web_obj[-1].valid_page
 
-  # list of web object << with queue << product push to each queue in round robin
-  def get_price(self, prd_list:list):
-    # find zipcode element
-    if(not self.__act_click_element('//*[@id="nav-global-location-popover-link"]')):
-      raise Exception("WEB_DRIVER", "Failed to find amazon html element {0}".format("zip-code-button"))
-    # //*[@id="GLUXZipUpdateInput"]
-    if(not self.__act_send_data('//*[@id="GLUXZipUpdateInput"]', "97124")):
-      raise Exception("WEB_DRIVER", "Failed to find amazon html element {0}".format("zip-code-textbox"))
-    # GLUXZipUpdate - update code button
-    if(not self.__act_click_element('//*[@id="GLUXZipUpdate"]')):
-      raise Exception("WEB_DRIVER", "Failed to find amazon html element {0}".format("zip-code-update-button"))
-    # continue - GLUXConfirmAction - /html/body/div[5]/div/div/div[2]/span/span
-    if (False == self.__act_click_element('//*/div[@class="a-popover-wrapper"]/div[@class="a-popover-footer"]/span/span')):
-      # a-autoid-29-announce - apply code //*[@id="a-autoid-3"]/span //*[@id="a-popover-3"]/div/div[2]/span/span/span/button
-      if(not self.__act_click_element('//*[@id="a-autoid-29-announce"]')):
-        raise Exception("WEB_DRIVER", "Failed to find amazon html element {0}".format("zip-code-continue-button"))
+  def load_landing_page(self, driver_obj:AmazonModel):
+    return driver_obj.set_landing_page()
 
-    for item_idx, item in enumerate(prd_list):
-      self.driver.get(item.link)
-      # wait(self.driver, 20, 0.1).until(self.__valid_page(LIST_TAG))
-      # self.driver.execute_script("window.stop();")
-      time.sleep(0.2)
-      # TITLE
-      # //*/div[@id="centerCol"]/*/[@id="productTitle"]
-      result, ele = self.__act_get_element('//*/span[@id="productTitle"]')
-      if(not result):
-        self.console("WEB_DRIVER: Failed to find amazon html element {0}".format("product-title"))
-        continue
-      else:
-        item.name = ele.text.strip()
-      # PRICE
-      #             id="a-page"/id="dp"/id="dp-container"/id="ppd"/id="centerCol"/id="desktop_unifiedPrice"(div[10])/id="unifiedPrice_feature_div"/id="price"/class="a-lineitem"(table)
-      #                                                 id="priceblock_ourprice_row"(tr)/class="a-span12"(td[2])/id="priceblock_ourprice"
-      # /html/body/div[2]/div[3]/div[7]/div[5]/div[4]/div[10]/div/div/table/tbody/tr/td[2]/span[1]
-      # //*[@id="priceblock_ourprice"]
-      result, ele = self.__act_get_element('//*/span[@id="priceblock_ourprice"]')
-      if(not result):
-        result, ele = self.__act_get_element('//*/span[@id="priceblock_saleprice"]')
-        if (not result):
-          pass
-          # self.console("Failed to find amazon html element {0}".format("product-price"))
-      if(result):
-        item.multi_vendor = False
-        item.status = ItemStatus.IN_STOCK
-        temp = ele.text.strip()
-        reg = re.match(r"([^\d\.]*)([\d\.]+)([^\d\.]*)",temp)
-        if (reg != None):
-          item.price = float(str(reg[2]))
-          if(str(reg[1]).strip() != ""):
-            item.currency = str(reg[1]).strip()
-          elif(str(reg[3]).strip() != ""):
-            item.currency = str(reg[1]).strip()
-          else:
-            self.console("Cannot find product currency")
-        else:
-          self.console("PROCESS: Failed to get price from string {0}".format(temp))
-          continue
-
-      # ITEM OUT OF STOCK or AMAZON PLACE "Available from these sellers." span script
-      if (not result):
-        # /html/body/div[2]/div[2]/div[8]/div[4]/div[4]/div[19]/div[1]/span
-        # //*[@id="availability"]/span
-        result, ele = self.__act_get_element('//*[@id="availability"]/span')
-        if (not result):
-          self.console("Failed to find amazon html element {0}".format("product-availability"))
-        else:
-          # OUT OF STOCK
-          if ((ele.text.strip() == "") or (ele.text.strip()=='Currently unavailable.')):
-            item.status_str = ele.text.strip()
-            item.status = ItemStatus.OUT_STOCK
-            item.price = 0
-            item.currency = "$"
-            self.console("Item {0} is out of stock".format(item_idx))
-          # Available from these sellers.
-          else:
-            # get price from vender offer option
-            result = False
-      # ITEM HAS MULTIPLE VENDOR
-      # /html/body/div[2]/div[2]/div[9]/div[4]/div[4]/div[44]
-      # /html/body/div[2]/div[2]/div[8]/div[4]/div[4]/div[44]/div[2]/span/a
-      # //*[@id="olp_feature_div"]
-      if (not result):
-        result, ele = self.__act_get_element('//*[@id="olp_feature_div"]/div/span/a[@class="a-link-normal"]/span[@class="a-size-base a-color-price"]')
-        if (not result):
-          self.console("WEB_DRIVER: Failed to find product price, please update the target element xpath")
-          continue
-        else:
-          item.multi_vendor = True
-          item.status = ItemStatus.IN_STOCK
-          temp = ele.text.strip()
-          reg = re.match(r"([^\d\.]*)([\d\.]+)([^\d\.]*)",temp)
-          if (reg != None):
-            item.price = float(str(reg[2]))
-            if(str(reg[1]).strip() != ""):
-              item.currency = str(reg[1]).strip()
-            elif(str(reg[3]).strip() != ""):
-              item.currency = str(reg[1]).strip()
-            else:
-              self.console("Cannot find product currency")
-          else:
-            self.console("PROCESS: Failed to get price from string {0}".format(temp))
-            continue
-      if (result):
-        self.console("[AMAZON]: COLLECT ITEM {0} DONE - {1}{2}".format(item_idx, item.price, item.currency))
-    self.driver.quit()
-
-
-  def __act_click_element(self,xpath):
-    try:
-      wait(self.driver, 5).until(EC.element_to_be_clickable((By.XPATH,xpath))).click()
-      return True
-    except:
-      return False
-  def __act_send_data(self,xpath, data):
-    try:
-      wait(self.driver, 5).until(EC.presence_of_element_located((By.XPATH,xpath))).send_keys(data)
-      return True
-    except:
-      return False
-  def __act_get_element(self,xpath):
-    try:
-      wait(self.driver, 5).until(EC.presence_of_element_located((By.XPATH,xpath)))
-      ele = self.driver.find_element_by_xpath(xpath)
-      return True, ele
-    except:
-      return False, None
+  def push_product(self, _product_list):
+    num_obj = len(self.web_obj)
+    counter = 0
+    for obj in self.web_obj:
+      obj.product_list.clear()
+    for product in _product_list:
+      self.web_obj[counter].product_list.append(product)
+      counter += 1
+      if (counter == num_obj):
+        counter = 0
