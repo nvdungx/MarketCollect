@@ -3,7 +3,7 @@ import pathlib, asyncio
 from operator import itemgetter, attrgetter, methodcaller
 from collections import Counter, OrderedDict
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 import pathlib, asyncio
 
 from src.module_xml import *
@@ -16,7 +16,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 KEY_PASSWORD = b"JIRA_REPORT"
 KEY_SALT = b'\x08\xa3w\xa9\xbc\x12\x8c\x14f\xc2\xc0B\xe3\x03\x08F'
-
+TOKEN_EXPIRE_TIME = 7200
 class EbayClient:
   def __init__(self, _console=None):
     self.id = None
@@ -28,6 +28,8 @@ class EbayClient:
     self.scope = None
     self.console = _console
     self.retry_time = None
+    self.token_expired = False
+    self.expire_time = 0
     self.__loading_client_configuration()
 
   def console_log(self, val:str):
@@ -54,6 +56,17 @@ class EbayClient:
           self.retrieve_time = None
       self.scope = data_dict["CLIENT-SCOPE"]
       self.retry_time = int(data_dict["RETRY-NUM"])
+      if (self.retrieve_time != None):
+        current_time = datetime.now()
+        expire_time = self.retrieve_time - timedelta(seconds=TOKEN_EXPIRE_TIME)
+        if (expire_time < current_time):
+          self.token_expired = True
+          self.expire_time = TOKEN_EXPIRE_TIME
+        else:
+          self.token_expired = False
+          self.expire_time = (expire_time - current_time).seconds
+      else:
+        self.token_expired = True
 
   def set_element(self, tag, val, encrypt=False):
     if (encrypt == True):

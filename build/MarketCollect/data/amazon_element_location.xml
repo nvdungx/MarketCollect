@@ -1,7 +1,7 @@
 <!-- location of html tag element(xpath) in amazon.com site -->
 <AMAZON>
   <PAGE>http://amazon.com</PAGE>
-  <LOAD-TIMEOUT>7</LOAD-TIMEOUT>
+  <LOAD-TIMEOUT>20</LOAD-TIMEOUT>
   <!-- GOOGLE CHROME WEB BROWSER -->
   <GOOGLE-PAGE>
     <LANDING>

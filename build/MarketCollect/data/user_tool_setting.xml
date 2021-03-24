@@ -1,6 +1,6 @@
 <TOOL>
   <FILE>
-    <IMPORT-LOC>C:/Users/Admin/Documents/Workspace/01.Projects/MarketCollect/data</IMPORT-LOC>
+    <IMPORT-LOC>C:/Users/Admin/Documents/Workspace/01.Projects/MarketCollect/build/MarketCollect/data</IMPORT-LOC>
     <SAVE-AS />
     <TEMP-PREV />
   </FILE>
@@ -19,11 +19,11 @@
       <EMAIL>sample@gmail.com</EMAIL>
     </EMAIL-LIST>
     <TOOL-RESOURCE>
-      <THREAD-NUM>8</THREAD-NUM>
+      <THREAD-NUM>5</THREAD-NUM>
       <OBJECT-NUM>3</OBJECT-NUM>
     </TOOL-RESOURCE>
     <SELECTED-DRIVER>MicrosoftEdge89.0.774.54_64b</SELECTED-DRIVER>
-    <FORMULA>=A2+B2+AC1</FORMULA>
+    <FORMULA>=IF(E2-(E2*0.15+J2)&lt;0, TRUE, FALSE)</FORMULA>
   </SETTINGS>
   <HELP>
     <UPDATE-URL>www.sample.con/api/v1/update</UPDATE-URL>

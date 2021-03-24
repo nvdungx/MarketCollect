@@ -149,6 +149,12 @@ class ReportApi:
     try:
       ws = self.__report_file.wb.active
       # set profit formula self.profit_formula
+      replace_row = re.findall(r"[A-Z]{1,2}\d{1,2}", self.profit_formula)
+      str(self.profit_formula)
+      # if (len(replace_row) > 0)
+      # row, col = openpyxl.utils.coordinate_to_tuple(replace_row[0])
+      # get row postition in formula
+
       for item in self.amazon_prd_list:
         ws.cell(item.row_idx, self.__col["AMAZON-LOC"]["PRICE"]).value = item.price
         ws.cell(item.row_idx, self.__col["AMAZON-LOC"]["ITEM-TITLE"]).value = item.name
@@ -164,3 +170,5 @@ class ReportApi:
     except Exception as e:
       self.__console_log(f"Error occur during generate report file {str(e)}")
       return False
+
+  # giá ebay - (giá ebay nhân 15% + giá amz) <0 thì gửi email kèm hìghlight trên file excel

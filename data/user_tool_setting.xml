@@ -17,11 +17,11 @@
       <EMAIL>sample@gmail.com</EMAIL>
     </EMAIL-LIST>
     <TOOL-RESOURCE>
-      <THREAD-NUM>8</THREAD-NUM>
+      <THREAD-NUM>10</THREAD-NUM>
       <OBJECT-NUM>3</OBJECT-NUM>
     </TOOL-RESOURCE>
     <SELECTED-DRIVER>MicrosoftEdge89.0.774.54_64b</SELECTED-DRIVER>
-    <FORMULA>=A2+B2+AC1</FORMULA>
+    <FORMULA>=IF((E1-(E1*0.15+J1))&lt;0, TRUE, FALSE)</FORMULA>
   </SETTINGS>
   <HELP>
     <UPDATE-URL>www.sample.con/api/v1/update</UPDATE-URL>

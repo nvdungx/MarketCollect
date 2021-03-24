@@ -11,7 +11,7 @@ from requests.auth import HTTPBasicAuth
 from src.model_product import *
 from src.model_ebay import *
 from src.module_xml import *
-
+from PySide6.QtCore import QTimer
 # only need to view public data(i.e. price)
 # application request access token with client ID and clien secret
 # get the access token
@@ -27,7 +27,13 @@ class EbayApi:
     self.console = _console
     self.clientObject = EbayClient()
     self.valid_token = False
-    self.token_expired = False
+    self.token_timer = QTimer(_parent)
+    self.token_timer.setInterval(self.clientObject.expire_time*1000)
+    self.token_timer.setSingleShot(True)
+    self.token_timer.timeout.connect(self.__handleTokenExpire)
+
+  def __handleTokenExpire(self):
+    self.clientObject.token_expired = True
 
   def console_log(self, val):
     if (self.console != None):
@@ -47,14 +53,15 @@ class EbayApi:
           self.clientObject.set_element(".//TOKEN-MINT", self.clientObject.OAuthToken, encrypt=True)
           self.clientObject.set_element(".//RETRIEVE-TIME", datetime.now().isoformat())
           self.valid_token = True
-          self.token_expired = False
+          self.clientObject.token_expired = False
+          self.token_timer.start()
           break
         except Exception as e:
           self.console_log(f"[ERROR]: failed during request client token from ebay {str(e)}")
     return self.valid_token
 
   def is_valid(self):
-    if (self.valid_token == True) and (self.token_expired == False):
+    if (self.valid_token == True) and (self.clientObject.token_expired == False):
       return True
     else:
       return self.get_token()
