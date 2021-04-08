@@ -70,32 +70,113 @@ class AmazonModel:
     self.wait2 = WebDriverWait(self.driver, 2, 0.1)
     for item in self.product_list:
       try:
-        try:
-          self.driver.get(item.link)
-        except Exception as e:
-          self.__console_log("[WARN][AMAZON]: Timeout page take too long to load")
+        self.driver.get(item.link)
+      except Exception as e:
+        self.__console_log("[WARN][AMAZON]: Timeout page take too long to load.Skip Item {0} at row {1}".format(item.link, item.row_idx))
+      try:
         val = self.__act_get_element_text(self.product_ele["TITLE"], True, False)
         if (val != None):
           item.name = val
         else:
-          self.__console_log(f"[WARN][AMAZON]: Fail to get product title")
+          self.__console_log("[WARN][AMAZON]: Fail to get product title. Item {0} at row {1}".format(item.link, item.row_idx))
         for k, v in self.product_ele.items():
           if (k == "TITLE"):
             continue
           else:
+            available_flag = True
             if ("AVAILABILITY" in v):
               avail_sts = self.__act_get_element_text(v["AVAILABILITY"], True, False)
               if (avail_sts != None):
                 if (avail_sts.upper() == "CURRENTLY UNAVAILABLE."):
-                  item.status = ItemStatus.OUT_STOCK
-                  item.price = 0
-                  item.currency = "$"
-                  item.multi_vendor = False
-                  self.console("[AMAZON]: ITEM {0} UNAVAILABLE".format(item.row_idx))
-                  break
+                  available_flag = False
                 else:
                   item.status = ItemStatus.IN_STOCK
                   item.multi_vendor = True
+            if ("STOCK-STATUS" in v):
+              # confirm if stock not available
+              if (available_flag == False):
+                item.status = ItemStatus.OUT_STOCK
+                item.price = 0
+                item.currency = "$"
+                item.multi_vendor = False
+                self.console("[AMAZON]: Item {0} at row {1} unavailable".format(item.link, item.row_idx))
+                # done for this item
+                break
+              else:
+                box_stock_status_ele = self.__act_get_element(v["STOCK-STATUS"], True, False)
+                if (box_stock_status_ele != None):
+                  # if stock ele = outOfStock
+                  if (box_stock_status_ele.get_attribute("id") == "outOfStock"):
+                    item.status = ItemStatus.OUT_STOCK
+                    item.price = 0
+                    item.currency = "$"
+                    item.multi_vendor = False
+                    self.console("[AMAZON]: Item {0} at row {1} unavailable".format(item.link, item.row_idx))
+                    # done for this item
+                    break
+                  elif (box_stock_status_ele.get_attribute("id") == "unqualifiedBuyBox"):
+                    if (self.__act_click_element(v["STOCK-BUTTON"], True, False)):
+                      offscreen_ele = self.__act_get_element(v["OFFSCREEN-CONTAINER"], False, False)
+                      # list_ele = None
+                      # if (offscreen_ele != None):
+                      #   list_ele = offscreen_ele.find_element_by_class_name(v["PRICE-OFFSCREEN"])
+                      price_val = ""
+                      if (offscreen_ele != None):
+                        for i in range(3):
+                          temp = str(v["PRICE-OFFSCREEN"]).replace("DIGIT", str(i))
+                          try:
+                            temp_ele = offscreen_ele.find_element_by_xpath(temp)
+                            if (temp_ele != None):
+                              price_val = temp_ele.find_element_by_class_name("a-price-symbol").text
+                              price_val += temp_ele.find_element_by_class_name("a-price-whole").text + "."
+                              price_val += temp_ele.find_element_by_class_name("a-price-fraction").text
+                            break
+                          except:
+                            pass
+                      if (price_val != "") and (price_val != "."):
+                        reg = re.match(r"([^\d\.]*)([\d\.]+)([^\d\.]*)",price_val)
+                        if (reg != None):
+                          item.price = float(str(reg[2]))
+                          if(str(reg[1]).strip() != ""):
+                            item.currency = str(reg[1]).strip()
+                          elif(str(reg[3]).strip() != ""):
+                            item.currency = str(reg[1]).strip()
+                          else:
+                            # can not found currency
+                            pass
+                        item.status = ItemStatus.IN_STOCK
+                        self.console("[AMAZON]: Item {0} DONE - {1} {2}".format(item.row_idx, item.price, item.currency))
+                        # done for this item
+                        break
+                      else:
+                        item.status = ItemStatus.IN_STOCK
+                        item.price = 0
+                        item.currency = "$"
+                        item.multi_vendor = False
+                        self.console("[AMAZON]: Can not found price for Item {0} at row {1}".format(item.link, item.row_idx))
+                  elif (box_stock_status_ele.get_attribute("id") == "usedOnlyBuybox"):
+                    price_val = self.__act_get_element_text(v["PRICE-BOX"], True, False)
+                    if (price_val != None):
+                      reg = re.match(r"([^\d\.]*)([\d\.]+)([^\d\.]*)",price_val)
+                      if (reg != None):
+                        item.price = float(str(reg[2]))
+                        if(str(reg[1]).strip() != ""):
+                          item.currency = str(reg[1]).strip()
+                        elif(str(reg[3]).strip() != ""):
+                          item.currency = str(reg[1]).strip()
+                        else:
+                          # can not found currency
+                          pass
+                      item.status = ItemStatus.IN_STOCK
+                      self.console("[AMAZON]: Item {0} DONE - {1} {2}".format(item.row_idx, item.price, item.currency))
+                      # done for this item
+                      break
+                    else:
+                      # can not found price //*[@id="priceblock_dealprice"]
+                      pass
+                else:
+                  # cannot found stock status
+                  pass
             if ("PRICE-BLOCK" in v):
               price_val = self.__act_get_element_text(v["PRICE-BLOCK"], True, False)
               if (price_val != None):
@@ -110,15 +191,16 @@ class AmazonModel:
                     # can not found currency
                     pass
                 item.status = ItemStatus.IN_STOCK
-                self.console("[AMAZON]: ITEM {0} DONE - {1}{2}".format(item.row_idx, item.price, item.currency))
+                self.console("[AMAZON]: Item {0} DONE - {1} {2}".format(item.row_idx, item.price, item.currency))
+                # done for this item
                 break
               else:
                 # can not found price //*[@id="priceblock_dealprice"]
                 pass
         if (item.status == ItemStatus.NONE):
-          self.__console_log("[WARN][AMAZON]: Failed to get product at row {0}".format(item.row_idx))
+          self.__console_log("[WARN][AMAZON]: Failed to get product {0} at row {1}".format(item.link, item.row_idx))
       except Exception as e:
-        self.__console_log("[WARN][AMAZON]: Exception occur during process product at row {0} - {1}".format(item.row_idx, str(e.args)))
+        self.__console_log("[WARN][AMAZON]: Exception occur during process product {0} at row {1} - {2}".format(item.link, item.row_idx, str(e.args)))
         result = False
     return result
   def set_landing_page(self):
@@ -187,6 +269,19 @@ class AmazonModel:
     try:
       wait.until(EC.visibility_of_element_located((By.XPATH, ele_xpath)), f"Failed locate element {ele_xpath}")
       val = self.driver.find_element_by_xpath(ele_xpath).text.strip()
+      return val
+    except Exception as e:
+      if (log_out == True):
+        self.__console_log(f"[ERROR][AMAZON]: {e.args}")
+      return None
+  def __act_get_element(self, ele_xpath, flag=False, log_out=False):
+    if (flag == False):
+      wait = self.wait10
+    else:
+      wait = self.wait2
+    try:
+      wait.until(EC.visibility_of_element_located((By.XPATH, ele_xpath)), f"Failed locate element {ele_xpath}")
+      val = self.driver.find_element_by_xpath(ele_xpath)
       return val
     except Exception as e:
       if (log_out == True):

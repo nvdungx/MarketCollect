@@ -30,13 +30,40 @@
       <CASE4>
         <!-- Currently unavailable. -->
         <AVAILABILITY>//*[@id="availability"]/span</AVAILABILITY>
+        <!-- Confirm out of stock box -->
+        <STOCK-STATUS>//*[@id="outOfStock"]</STOCK-STATUS>
       </CASE4>
       <CASE5>
+        <!-- Currently available weird case. -->
+        <AVAILABILITY>//*[@id="availability"]/span</AVAILABILITY>
+        <!-- Confirm stock box . Required extra step-->
+        <STOCK-STATUS>//*[@id="unqualifiedBuyBox"]</STOCK-STATUS>
+        <STOCK-BUTTON>//*[@id="buybox-see-all-buying-choices"]/span/a</STOCK-BUTTON>
+        <OFFSCREEN-CONTAINER>//*[@id="aod-container"]</OFFSCREEN-CONTAINER>
+        <PRICE-OFFSCREEN>.//*[@id="aod-price-DIGIT"]</PRICE-OFFSCREEN>
+      </CASE5>
+      <CASE6>
         <!-- Available from {these sellers.}-->
         <AVAILABILITY>//*/div[@id="availability"]/span/span[2]</AVAILABILITY>
         <!-- //*[@id="olp_feature_div"]/div[2]/span/a/span[2] -->
         <PRICE-BLOCK>//*[@id="olp_feature_div"]/div[@class="a-section a-spacing-small a-spacing-top-small"]/span/a[@class="a-link-normal"]/span[@class="a-size-base a-color-price"]</PRICE-BLOCK>
-      </CASE5>
+      </CASE6>
+      <CASE7>
+        <!-- Available from {these sellers.}-->
+        <AVAILABILITY>//*/div[@id="availability"]/span/span[2]</AVAILABILITY>
+        <!-- Confirm stock box -->
+        <STOCK-STATUS>//*[@id="unqualifiedBuyBox"]</STOCK-STATUS>
+        <STOCK-BUTTON>//*[@id="buybox-see-all-buying-choices"]/span/a</STOCK-BUTTON>
+        <OFFSCREEN-CONTAINER>//*[@id="aod-container"]</OFFSCREEN-CONTAINER>
+        <PRICE-OFFSCREEN>.//*[@id="aod-price-DIGIT"]</PRICE-OFFSCREEN>
+      </CASE7>
+      <CASE8>
+        <!-- Currently available weird case. -->
+        <AVAILABILITY>//*[@id="availability"]/span</AVAILABILITY>
+        <!-- Confirm stock box . Required extra step-->
+        <STOCK-STATUS>//*[@id="usedOnlyBuybox"]</STOCK-STATUS>
+        <PRICE-BOX>//*[@id="buyNew_noncbb"]/span</PRICE-BOX>
+      </CASE8>
     </PRODUCT>
   </GOOGLE-PAGE>
   <!-- EDGE WEB BROWSER -->
@@ -67,13 +94,40 @@
       <CASE4>
         <!-- Currently unavailable. -->
         <AVAILABILITY>//*[@id="availability"]/span</AVAILABILITY>
+        <!-- Confirm out of stock box -->
+        <STOCK-STATUS>//*[@id="outOfStock"]</STOCK-STATUS>
       </CASE4>
       <CASE5>
+        <!-- Currently available weird case. -->
+        <AVAILABILITY>//*[@id="availability"]/span</AVAILABILITY>
+        <!-- Confirm stock box . Required extra step-->
+        <STOCK-STATUS>//*[@id="unqualifiedBuyBox"]</STOCK-STATUS>
+        <STOCK-BUTTON>//*[@id="buybox-see-all-buying-choices"]/span/a</STOCK-BUTTON>
+        <OFFSCREEN-CONTAINER>//*[@id="aod-container"]</OFFSCREEN-CONTAINER>
+        <PRICE-OFFSCREEN>.//*[@id="aod-price-DIGIT"]</PRICE-OFFSCREEN>
+      </CASE5>
+      <CASE6>
         <!-- Available from {these sellers.}-->
         <AVAILABILITY>//*/div[@id="availability"]/span/span[2]</AVAILABILITY>
         <!-- //*[@id="olp_feature_div"]/div[2]/span/a/span[2] -->
         <PRICE-BLOCK>//*[@id="olp_feature_div"]/div[@class="a-section a-spacing-small a-spacing-top-small"]/span/a[@class="a-link-normal"]/span[@class="a-size-base a-color-price"]</PRICE-BLOCK>
-      </CASE5>
+      </CASE6>
+      <CASE7>
+        <!-- Available from {these sellers.}-->
+        <AVAILABILITY>//*/div[@id="availability"]/span/span[2]</AVAILABILITY>
+        <!-- Confirm stock box -->
+        <STOCK-STATUS>//*[@id="unqualifiedBuyBox"]</STOCK-STATUS>
+        <STOCK-BUTTON>//*[@id="buybox-see-all-buying-choices"]/span/a</STOCK-BUTTON>
+        <OFFSCREEN-CONTAINER>//*[@id="aod-container"]</OFFSCREEN-CONTAINER>
+        <PRICE-OFFSCREEN>.//*[@id="aod-price-DIGIT"]</PRICE-OFFSCREEN>
+      </CASE7>
+      <CASE8>
+        <!-- Currently available weird case. -->
+        <AVAILABILITY>//*[@id="availability"]/span</AVAILABILITY>
+        <!-- Confirm stock box . Required extra step-->
+        <STOCK-STATUS>//*[@id="usedOnlyBuybox"]</STOCK-STATUS>
+        <PRICE-BOX>//*[@id="buyNew_noncbb"]/span</PRICE-BOX>
+      </CASE8>
     </PRODUCT>
   </EDGE-PAGE>
   <!-- FIRE WEB BROWSER -->
@@ -104,13 +158,40 @@
       <CASE4>
         <!-- Currently unavailable. -->
         <AVAILABILITY>//*[@id="availability"]/span</AVAILABILITY>
+        <!-- Confirm out of stock box -->
+        <STOCK-STATUS>//*[@id="outOfStock"]</STOCK-STATUS>
       </CASE4>
       <CASE5>
-      <!-- Available from {these sellers.}-->
+        <!-- Currently available weird case. -->
+        <AVAILABILITY>//*[@id="availability"]/span</AVAILABILITY>
+        <!-- Confirm stock box . Required extra step-->
+        <STOCK-STATUS>//*[@id="unqualifiedBuyBox"]</STOCK-STATUS>
+        <STOCK-BUTTON>//*[@id="buybox-see-all-buying-choices"]/span/a</STOCK-BUTTON>
+        <OFFSCREEN-CONTAINER>//*[@id="aod-container"]</OFFSCREEN-CONTAINER>
+        <PRICE-OFFSCREEN>.//*[@id="aod-price-DIGIT"]</PRICE-OFFSCREEN>
+      </CASE5>
+      <CASE6>
+        <!-- Available from {these sellers.}-->
         <AVAILABILITY>//*/div[@id="availability"]/span/span[2]</AVAILABILITY>
         <!-- //*[@id="olp_feature_div"]/div[2]/span/a/span[2] -->
         <PRICE-BLOCK>//*[@id="olp_feature_div"]/div[@class="a-section a-spacing-small a-spacing-top-small"]/span/a[@class="a-link-normal"]/span[@class="a-size-base a-color-price"]</PRICE-BLOCK>
-      </CASE5>
+      </CASE6>
+      <CASE7>
+        <!-- Available from {these sellers.}-->
+        <AVAILABILITY>//*/div[@id="availability"]/span/span[2]</AVAILABILITY>
+        <!-- Confirm stock box -->
+        <STOCK-STATUS>//*[@id="unqualifiedBuyBox"]</STOCK-STATUS>
+        <STOCK-BUTTON>//*[@id="buybox-see-all-buying-choices"]/span/a</STOCK-BUTTON>
+        <OFFSCREEN-CONTAINER>//*[@id="aod-container"]</OFFSCREEN-CONTAINER>
+        <PRICE-OFFSCREEN>.//*[@id="aod-price-DIGIT"]</PRICE-OFFSCREEN>
+      </CASE7>
+      <CASE8>
+        <!-- Currently available weird case. -->
+        <AVAILABILITY>//*[@id="availability"]/span</AVAILABILITY>
+        <!-- Confirm stock box . Required extra step-->
+        <STOCK-STATUS>//*[@id="usedOnlyBuybox"]</STOCK-STATUS>
+        <PRICE-BOX>//*[@id="buyNew_noncbb"]/span</PRICE-BOX>
+      </CASE8>
     </PRODUCT>
   </FIREFOX-PAGE>
 </AMAZON>

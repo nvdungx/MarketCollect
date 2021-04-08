@@ -46,7 +46,7 @@ from src.module_ebay import *
 from src.module_report import *
 from src.module_xml import *
 
-import pydevd
+# import pydevd
 
 MAX_THREAD_NUM = 10
 MAX_OBJ_NUM = 3
@@ -389,7 +389,7 @@ class GenReport(QRunnable):
   def console_log(self, val:str):
     self.signals.console.emit(f"{val}")
   def run(self):
-    pydevd.settrace(suspend=False)
+    # pydevd.settrace(suspend=False)
     if (self.parent.report.gen_report()):
       self.signals.bgwork.emit({"job":"report", "result":True})
     else:
@@ -408,7 +408,7 @@ class GetAmazonProduct(QRunnable):
   def console_log(self, val:str):
     self.signals.console.emit(f"{val}")
   def run(self):
-    pydevd.settrace(suspend=False)
+    # pydevd.settrace(suspend=False)
     self.web_obj.console = self.console_log
     if (self.web_obj.get_product_price()):
       self.signals.bgwork.emit({"job":"amaz-prd",
@@ -431,7 +431,7 @@ class StartWebDriver(QRunnable):
   def console_log(self, val:str):
     self.signals.console.emit(f"{val}")
   def run(self):
-    pydevd.settrace(suspend=False)
+    # pydevd.settrace(suspend=False)
     self.parent.amazon.console = self.console_log
     if (self.parent.amazon.set_driver(self.parent.subViewSelDriver.ui.comboBox.currentText())):
       self.signals.bgwork.emit({"job":"amaz-landing",
@@ -455,7 +455,7 @@ class LoadLandingPage(QRunnable):
   def console_log(self, val:str):
     self.signals.console.emit(f"{val}")
   def run(self):
-    pydevd.settrace(suspend=False)
+    # pydevd.settrace(suspend=False)
     self.parent.amazon.console = self.console_log
     if (self.parent.amazon.load_landing_page(self.obj)):
       self.signals.bgwork.emit({"job":"amaz-landing",
@@ -482,7 +482,7 @@ class MintEbayToken(QRunnable):
   def console_log(self, val:str):
     self.signals.console.emit(f"{val}")
   def run(self):
-    pydevd.settrace(suspend=False)
+    # pydevd.settrace(suspend=False)
     if (self.parent.ebay.get_token()):
       self.signals.bgwork.emit({"job":"mint-token",
                                 "result": True})
@@ -505,7 +505,7 @@ class GetEbayProduct(QRunnable):
   def console_log(self, val:str):
     self.signals.console.emit(f"{val}")
   def run(self):
-    pydevd.settrace(suspend=False)
+    # pydevd.settrace(suspend=False)
     temp = None
     # self.console_log(f"THREAD OF PRODUCT ID {self.prd_idx} - {QThread.currentThread()}")
     temp = self.parent.ebay.get_price(self.parent.report.ebay_prd_list[self.prd_idx])
@@ -529,7 +529,7 @@ class LoadToolConfig(QRunnable):
   def console_log(self, val:str):
     self.signals.console.emit(f"{val}")
   def run(self):
-    pydevd.settrace(suspend=False)
+    # pydevd.settrace(suspend=False)
     toolCfg = XmlDoc("user_tool_setting.xml", _console=self.console_log)
     if (toolCfg.parse()):
       # return data to GUI UI
@@ -550,7 +550,7 @@ class LoadExcelInfo(QRunnable):
   def console_log(self, val:str):
     self.signals.console.emit(f"{val}")
   def run(self):
-    pydevd.settrace(suspend=False)
+    # pydevd.settrace(suspend=False)
     self.parent.report.console = self.console_log
     if (self.parent.report.get_prd_link()):
       self.signals.completed.emit(True)

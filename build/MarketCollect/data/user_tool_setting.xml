@@ -1,6 +1,6 @@
 <TOOL>
   <FILE>
-    <IMPORT-LOC>C:/Users/Admin/Documents/Workspace/01.Projects/MarketCollect/build/MarketCollect/data</IMPORT-LOC>
+    <IMPORT-LOC>C:/Users/Admin/Documents/Workspace/01.Projects/MarketCollect/data</IMPORT-LOC>
     <SAVE-AS />
     <TEMP-PREV />
   </FILE>
@@ -9,21 +9,19 @@
       <TIMER>00:20:01</TIMER>
       <TIMER>01:00:11</TIMER>
       <TIMER>00:59:21</TIMER>
-      <TIMER>00:00:00</TIMER>
     </TIMER-LIST>
     <EMAIL-LIST>
       <EMAIL>nvdung694@gmail.com</EMAIL>
       <EMAIL>sample@gmail.com</EMAIL>
       <EMAIL>sample@gmail.com</EMAIL>
       <EMAIL>sample@gmail.com</EMAIL>
-      <EMAIL>sample@gmail.com</EMAIL>
     </EMAIL-LIST>
     <TOOL-RESOURCE>
-      <THREAD-NUM>5</THREAD-NUM>
-      <OBJECT-NUM>3</OBJECT-NUM>
+      <THREAD-NUM>10</THREAD-NUM>
+      <OBJECT-NUM>2</OBJECT-NUM>
     </TOOL-RESOURCE>
     <SELECTED-DRIVER>MicrosoftEdge89.0.774.54_64b</SELECTED-DRIVER>
-    <FORMULA>=IF(E2-(E2*0.15+J2)&lt;0, TRUE, FALSE)</FORMULA>
+    <FORMULA>=IF((E1-(E1*0.15+J1))&lt;0, TRUE, FALSE)</FORMULA>
   </SETTINGS>
   <HELP>
     <UPDATE-URL>www.sample.con/api/v1/update</UPDATE-URL>

@@ -76,14 +76,14 @@ class EbayApi:
           r = requests.get(url, headers=header)
           if (r.status_code == 200):
             rst_data = r.json()
-            product.price = rst_data["price"]["value"]
+            product.price = float(str(rst_data["price"]["value"]))
             product.name = rst_data["title"]
             product.currency = rst_data["price"]["currency"]
             if (rst_data["estimatedAvailabilities"][0]["estimatedAvailabilityStatus"] == "IN_STOCK"):
               product.status = ItemStatus.IN_STOCK
             else:
               product.status = ItemStatus.OUT_STOCK
-            self.console_log(f"[EBAY]: Item {product.row_idx} id {item_id} - DONE {product.price}{product.currency}")
+            self.console_log(f"[EBAY]: Item {product.row_idx} id {item_id} - DONE {product.price} {product.currency}")
             break
           else:
             self.console_log(f"[WARNING][EBAY]: Item Item {product.row_idx} id {item_id} - request failed {r.json()}")
